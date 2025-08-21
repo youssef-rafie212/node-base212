@@ -1,6 +1,7 @@
 import User from "../../models/userModel.js";
 import Admin from "../../models/adminModel.js";
 
+// map user types to models
 const getModel = (userType) => {
     const modelMap = {
         user: User,
@@ -9,16 +10,6 @@ const getModel = (userType) => {
     };
 
     const model = modelMap[userType.toLowerCase()];
-
-    const validKeys = ["user", "admin", "guest"];
-
-    const invalidKeys = Object.keys(modelMap).filter(
-        (key) => !validKeys.includes(key)
-    );
-
-    if (invalidKeys.length > 0) {
-        return null;
-    }
 
     return model;
 };

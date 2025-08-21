@@ -1,4 +1,5 @@
 import express from "express";
+
 import * as authController from "../../controllers/api/authController/authController.js";
 import * as authValidation from "../../validation/api/auth.js";
 import authenticate from "../../middlewares/authenticate/authenticate.js";

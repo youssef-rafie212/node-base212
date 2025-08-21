@@ -40,6 +40,7 @@ const userSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
+// pre save hook to hash the password before saving
 userSchema.pre("save", async function (next) {
     if (this.isModified("password")) {
         this.password = await bcrypt.hash(this.password, 12);
@@ -47,11 +48,13 @@ userSchema.pre("save", async function (next) {
     next();
 });
 
+// pre find hook to populate wanted fields
 userSchema.pre(/^find/, function (next) {
     this.populate("country");
     next();
 });
 
+// method to compare passwords with the hashed password
 userSchema.methods.comparePassword = async function (enteredPassword) {
     return bcrypt.compare(enteredPassword, this.password);
 };

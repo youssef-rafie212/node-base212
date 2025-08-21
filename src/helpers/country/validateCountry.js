@@ -1,5 +1,6 @@
 import Country from "../../models/countryModel.js";
 
+// check if country exists
 export const validateCountryExists = async (countryId) => {
     try {
         const country = await Country.findById(countryId);

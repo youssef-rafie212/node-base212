@@ -1,3 +1,4 @@
+// create a standardized api response object
 const apiResponse = (statusCode, translatedMessage, data = {}) => {
     return {
         success: true,

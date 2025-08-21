@@ -1,5 +1,6 @@
 import { doubleCsrf } from "csrf-csrf";
 
+// this file configures csrf protection using the csrf-csrf library.
 const { invalidCsrfTokenError, generateCsrfToken, doubleCsrfProtection } =
     doubleCsrf({
         getSecret: () => process.env.CSRF_SECRET || "tamerElgayar",
@@ -19,8 +20,4 @@ const { invalidCsrfTokenError, generateCsrfToken, doubleCsrfProtection } =
         },
     });
 
-export {
-    invalidCsrfTokenError,
-    generateCsrfToken,
-    doubleCsrfProtection,
-};
+export { invalidCsrfTokenError, generateCsrfToken, doubleCsrfProtection };

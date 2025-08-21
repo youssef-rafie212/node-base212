@@ -1,5 +1,6 @@
 import Device from "../../models/deviceModel.js";
 
+// stores new user devices
 export const addUserDevice = async (
     userId,
     fcmToken,
@@ -18,6 +19,7 @@ export const addUserDevice = async (
     }
 };
 
+// deletes all user devices
 export const deleteAllUserDevices = async (userId) => {
     await Device.deleteMany({ userId });
 };

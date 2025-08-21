@@ -1,4 +1,5 @@
 import admin from "firebase-admin";
+
 import * as returnObject from "../../helpers/returnObject/returnObject.js";
 import modelMap from "../../helpers/modelMap/modelMap.js";
 import {
@@ -9,9 +10,7 @@ import Setting from "../../models/settingsModel.js";
 import Device from "../../models/deviceModel.js";
 import Notification from "../../models/notificationModel.js";
 
-/**
- * Handles notifications for different users and scenarios.
- */
+// handles notifications for different users and scenarios
 export const handleNotification = async (
     objUsers,
     objMessage,
@@ -22,12 +21,16 @@ export const handleNotification = async (
     data
 ) => {
     try {
+        // get app settings
         const setting = await Setting.findOne({});
+
+        // create notification settings object
         const objSetting = {
             image: settingImage + setting.logo,
             title: setting.appTitle,
         };
 
+        // create notification object
         const objNotify = returnObject.notifyObj(
             objUsers,
             objSetting,
@@ -38,22 +41,29 @@ export const handleNotification = async (
             data
         );
 
+        // save notification to database
         await saveNotification(objNotify);
 
+        // get model based on type
         const Model = modelMap(objUsers.userRef);
+
+        // get the receiver document
         const user = await Model.findOne(
             { _id: objUsers.userId },
             { isNotify: true }
         );
 
         if (user) {
+            // get receiver devices
             const devices = await Device.find({
                 userId: objUsers.userId,
                 deviceType: { $in: ["android", "ios", "web"] },
             });
 
+            // send notifications to all receiver devices
             await Promise.all(
                 devices.map((device) => {
+                    // create notification sending object for each device
                     const objSendNotify = returnObject.sendNotifyObj(
                         device.fcmToken,
                         objSetting,
@@ -65,6 +75,7 @@ export const handleNotification = async (
                         data
                     );
 
+                    // send the notification
                     return sendNotification(objSendNotify, device.deviceType);
                 })
             );
@@ -74,12 +85,13 @@ export const handleNotification = async (
     }
 };
 
-/**
- * Saves the notification to the database.
- */
+// saves the notification to the database
 const saveNotification = async (objNotify) => {
     try {
+        // create a new notification document
         const notification = await Notification.create(objNotify);
+
+        // update receiver notification count
         const updateField = { $inc: { notifyCount: 1 } };
         const model = modelMap(objNotify.userRef);
 
@@ -93,27 +105,25 @@ const saveNotification = async (objNotify) => {
     }
 };
 
-/**
- * Sends a notification using Firebase Admin.
- */
+// sends a notification using firebase admin
 const sendNotification = async (objSendNotify, deviceType) => {
     try {
         const message = {
-            token: objSendNotify.token, // For a single device
+            token: objSendNotify.token, // for a single device
             notification: {
                 title: objSendNotify.notification.title,
                 body: objSendNotify.notification.body,
             },
-            data: objSendNotify.data, // Custom data for all platforms
+            data: objSendNotify.data, // custom data for all platforms
         };
 
-        // Add platform-specific options
+        // add platform-specific options
         if (deviceType === "ios") {
             message.apns = {
                 payload: {
                     aps: {
                         sound: "default",
-                        badge: Number(objSendNotify.data.badge), // Badge for iOS notifyCount of user
+                        badge: Number(objSendNotify.data.badge), // badge for ios notifyCount of user
                     },
                 },
             };
@@ -121,10 +131,10 @@ const sendNotification = async (objSendNotify, deviceType) => {
             message.android = {
                 notification: {
                     sound: "default",
-                    channelId: "default_channel", // Ensure the app has a default notification channel
+                    channelId: "default_channel", // ensure the app has a default notification channel
                 },
                 data: {
-                    badge: objSendNotify.data.badge, // Add badge as part of custom data (notifyCount of user)
+                    badge: objSendNotify.data.badge, // add badge as part of custom data (notifyCount of user)
                 },
             };
         } else if (deviceType === "web") {
@@ -139,6 +149,7 @@ const sendNotification = async (objSendNotify, deviceType) => {
             };
         }
 
+        // send the notification
         const response = await admin.messaging().send(message);
         console.log("Notification sent successfully:", response);
     } catch (error) {

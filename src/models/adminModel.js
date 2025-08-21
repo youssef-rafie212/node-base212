@@ -25,6 +25,7 @@ const adminSchema = new mongoose.Schema(
     { timestamps: true, versionKey: false }
 );
 
+// pre save hook to hash the password before saving
 adminSchema.pre("save", async function (next) {
     if (this.isModified("password")) {
         this.password = await bcrypt.hash(this.password, 12);
@@ -32,6 +33,7 @@ adminSchema.pre("save", async function (next) {
     next();
 });
 
+// method to compare passwords with the hashed password
 adminSchema.methods.comparePassword = async function (enteredPassword) {
     return bcrypt.compare(enteredPassword, this.password);
 };

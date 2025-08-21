@@ -1,3 +1,4 @@
+// create a standardized api error object
 const apiError = (statusCode, translatedMessage) => {
     return {
         success: false,

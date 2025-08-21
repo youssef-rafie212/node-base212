@@ -1,6 +1,7 @@
 import axios from "axios";
 import crypto from "crypto";
 
+// Paymob configuration
 const PAYMOB_MODE = process.env.PAYMOB_STATUS || "test";
 const PAYMOB_API_KEY = process.env.PAYMOB_API_KEY;
 const PAYMOB_HMAC = process.env.PAYMOB_HMAC;
@@ -18,6 +19,7 @@ const PAYMOB_PUBLIC_KEY =
         ? process.env.PAYMOB_PUBLIC_KEY_TEST
         : process.env.PAYMOB_PUBLIC_KEY_LIVE;
 
+// authenticate with paymob and get access token
 export async function authenticate() {
     const response = await axios.post(`${PAYMOB_BASE_URL}/auth/tokens`, {
         api_key: PAYMOB_API_KEY,
@@ -25,6 +27,7 @@ export async function authenticate() {
     return response.data.token;
 }
 
+// create a new order and get order id
 export async function createOrder(authToken, amountCents, merchantOrderId) {
     const response = await axios.post(`${PAYMOB_BASE_URL}/ecommerce/orders`, {
         auth_token: authToken,
@@ -36,6 +39,7 @@ export async function createOrder(authToken, amountCents, merchantOrderId) {
     return response.data.id;
 }
 
+// generate a payment key using the order id
 export async function generatePaymentKey(
     authToken,
     orderId,
@@ -58,10 +62,12 @@ export async function generatePaymentKey(
     return response.data.token;
 }
 
+// get iframe payment url using payment key and get payment web view
 export function getPaymentUrl(paymentKey) {
     return `${PAYMOB_BASE_URL}/acceptance/iframes/${PAYMOB_IFRAME_ID}?payment_token=${paymentKey}`;
 }
 
+// create a unified checkout session and get payment web view
 export async function createUnifiedCheckout(
     amountCents,
     billingData,
@@ -104,6 +110,7 @@ export async function createUnifiedCheckout(
     }
 }
 
+// verify hmac signature for security
 export function verifyHMAC(body, receivedHMAC) {
     const obj = body.obj;
     const hmacFields = [

@@ -1,5 +1,6 @@
 import apiError from "../api/apiError.js";
 
+// global error handler middleware
 const globalErrorHandler = (err, req, res, next) => {
     console.error(err);
 

@@ -11,7 +11,7 @@ dotenv.config();
 
 import app from "./src/app.js";
 
-// DB Connection
+// db connection
 mongoose
     .connect(process.env.DB_URI || "mongodb://localhost:27017/base")
     .then(() => {
@@ -21,7 +21,7 @@ mongoose
         console.error("MongoDB connection error:", err);
     });
 
-// Server
+// server
 let server;
 
 if (process.env.ENABLE_HTTPS === "true") {
@@ -37,15 +37,16 @@ if (process.env.ENABLE_HTTPS === "true") {
     server = http.createServer(app);
 }
 
+// start server
 server.listen(process.env.PORT || 3000, () => {
     console.log(`Server is running on port ${process.env.PORT || 3000}`);
 });
 
-// Initialize Redis
+// initialize redis
 export const redisClient = await initializeRedis();
 
-// Initialize socket handling
+// initialize socket handling
 export const socketServer = await initializeSocket(server, app);
 
-// Initialize Firebase
+// initialize firebase
 initializeFirebase();

@@ -5,9 +5,9 @@ import i18n from "i18n";
 import User from "../../models/userModel.js";
 
 let io;
-export const connectedUsers = new Map(); // Store connected users (fallback when Redis is unavailable)
+export const connectedUsers = new Map(); // store connected users (fallback when Redis is unavailable)
 
-// Initialize Socket.IO
+// initialize socket.io
 export const initializeSocket = async (server, app) => {
     io = new Server(server, {
         cors: {
@@ -24,7 +24,7 @@ export const initializeSocket = async (server, app) => {
     io.on("connection", (socket) => {
         console.log(`Socket connected with socket id: ${socket.id}`);
 
-        // Handle user initialization
+        // handle user initialization
         socket.on("initializeUser", async ({ userId }) => {
             try {
                 if (!userId) {
@@ -34,7 +34,7 @@ export const initializeSocket = async (server, app) => {
                     });
                 }
 
-                // Validate if userId is a valid MongoDB ObjectId
+                // validate if userId is a valid mongoDb objectId
                 if (!mongoose.Types.ObjectId.isValid(userId)) {
                     return socket.emit("fail", {
                         key: "initializeUser",
@@ -42,7 +42,7 @@ export const initializeSocket = async (server, app) => {
                     });
                 }
 
-                // Check if user is already connected (Redis first, fallback to Map)
+                // check if user is already connected (redis first, fallback to map)
                 const existingSocketId = connectedUsers.get(userId);
                 if (existingSocketId) {
                     return socket.emit("fail", {
@@ -51,7 +51,7 @@ export const initializeSocket = async (server, app) => {
                     });
                 }
 
-                // Get user from database (only fetch when connecting)
+                // get user from database (only fetch when connecting)
                 const userData = await User.findById(userId);
                 if (!userData) {
                     return socket.emit("fail", {
@@ -60,7 +60,7 @@ export const initializeSocket = async (server, app) => {
                     });
                 }
 
-                // Set userId on the socket
+                // set userId on the socket
                 socket.userId = userId;
 
                 // Cache connected user data and add to connected users (Redis and Map for fallback)
@@ -70,7 +70,7 @@ export const initializeSocket = async (server, app) => {
                     `User ${userId} initialized with socket ID: ${socket.id}`
                 );
 
-                // Send confirmation back to client
+                // send confirmation back to client
                 socket.emit("initialized", { userId });
             } catch (error) {
                 console.error("Error initializing user:", error);
@@ -81,7 +81,7 @@ export const initializeSocket = async (server, app) => {
             }
         });
 
-        // Events
+        // events
     });
 
     return io;

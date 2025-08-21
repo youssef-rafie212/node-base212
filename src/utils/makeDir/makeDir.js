@@ -4,8 +4,9 @@ import { fileURLToPath } from "url";
 import { dirname } from "path";
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename)
+const __dirname = dirname(__filename);
 
+// create a directory if it does not exist
 const makeDir = (dir) => {
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(

@@ -1,7 +1,12 @@
 import path from "path";
 import fs from "fs";
-import { __dirname } from "../../utils/path/path.js";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// remove file
 export const removeFile = (name, type, otherLink) => {
     if (
         name !== "male.png" &&
@@ -47,6 +52,7 @@ export const removeFile = (name, type, otherLink) => {
     }
 };
 
+// remove folder
 export const removeFolder = (dir) => {
     try {
         if (

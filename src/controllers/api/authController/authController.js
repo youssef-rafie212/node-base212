@@ -4,6 +4,7 @@ import apiResponse from "../../../utils/api/apiResponse.js";
 import getModel from "../../../helpers/modelMap/modelMap.js";
 import duplicate from "../../../helpers/auth/duplicate.js";
 import admin from "firebase-admin";
+
 import * as sendVerification from "../../../helpers/auth/sendVerification.js";
 import * as devices from "../../../helpers/auth/devices.js";
 import * as tokens from "../../../helpers/auth/tokens.js";
@@ -17,11 +18,13 @@ import {
     userWithTokenObj,
 } from "../../../utils/returnObject/returnObject.js";
 
+// generate a csrf token for the current request
 export const getCsrfToken = (req, res) => {
     const token = generateCsrfToken(req, res);
     res.send(apiResponse(200, i18n.__("tokenGenerated"), { token }));
 };
 
+// local sign up for user with full data
 export const signUp = async (req, res) => {
     try {
         const data = req.body;
@@ -29,7 +32,7 @@ export const signUp = async (req, res) => {
         // get model based on type
         const model = getModel(data.type);
 
-        // check for duplicate email
+        // check for duplicate email if it exists in body
         if (data.email) {
             const isDuplicate = await duplicate(model, "email", data.email);
             if (isDuplicate) {
@@ -39,7 +42,7 @@ export const signUp = async (req, res) => {
             }
         }
 
-        // check for duplicate phone
+        // check for duplicate phone if it exists in body
         if (data.phone) {
             const isPhoneDuplicate = await duplicate(
                 model,
@@ -53,7 +56,7 @@ export const signUp = async (req, res) => {
             }
         }
 
-        // validate country if exists
+        // validate country if it exists in body
         if (data.country) {
             const isCountryValid = await validateCountryExists(data.country);
             if (!isCountryValid) {
@@ -66,10 +69,10 @@ export const signUp = async (req, res) => {
         // handle avatar upload if it exists in the request
         const id = await userAvatars.uploadAvatar(req, data);
 
-        // set dataCompleted as true
+        // set dataCompleted as true (no complete data step)
         data.dataCompleted = true;
 
-        // generate a user token
+        // generate user token and store user device
         const token = await afterAuth(
             id,
             data.type,
@@ -77,8 +80,13 @@ export const signUp = async (req, res) => {
             data.deviceType
         );
 
+        // create new user
         const user = await model.create({ _id: id, ...data });
+
+        // populate wanted fields (pre, post hooks wont work here)
         await user.populate("country");
+
+        // get a clean formated object to return in the response
         const resData = userWithTokenObj(user, token);
 
         res.send(apiResponse(200, i18n.__("successfulSignup"), resData));
@@ -88,10 +96,12 @@ export const signUp = async (req, res) => {
     }
 };
 
+// request an otp that will be sent on email
 export const requestOtpEmail = async (req, res) => {
     try {
         const data = req.body;
 
+        // get model based on type
         const model = getModel(data.type);
 
         // find user by email
@@ -103,7 +113,7 @@ export const requestOtpEmail = async (req, res) => {
             return res.status(400).send(apiError(400, i18n.__("userNotFound")));
         }
 
-        // generate and send OTP
+        // generate and send otp
         const otp = await sendVerification.sendVerificationByEmail(
             user.email,
             "otpSentEmail",
@@ -111,7 +121,7 @@ export const requestOtpEmail = async (req, res) => {
             "otpSentEmailHtml"
         );
 
-        // store OTP for user
+        // store otp for user
         otps.setOtp(user, otp);
         await user.save();
 
@@ -122,10 +132,12 @@ export const requestOtpEmail = async (req, res) => {
     }
 };
 
+// request an otp that will be sent on phone
 export const requestOtpPhone = async (req, res) => {
     try {
         const data = req.body;
 
+        // get model based on type
         const model = getModel(data.type);
 
         // find user by phone
@@ -137,18 +149,19 @@ export const requestOtpPhone = async (req, res) => {
             return res.status(400).send(apiError(400, i18n.__("userNotFound")));
         }
 
-        // generate and send OTP
+        // generate and send otp
         const { otp, smsResponse } =
             await sendVerification.sendVerificationBySMS(
                 user.phone,
                 "otpSentSms"
             );
 
+        // check if SMS was sent successfully
         if (!smsResponse) {
             return res.status(500).send(apiError(500, i18n.__("smsNotSent")));
         }
 
-        // store OTP for user
+        // store otp for user
         otps.setOtp(user, otp);
         await user.save();
 
@@ -159,17 +172,19 @@ export const requestOtpPhone = async (req, res) => {
     }
 };
 
+// local sign in
 export const localSignIn = async (req, res) => {
     try {
         const data = req.body;
 
+        // get model based on type
         const model = getModel(data.type);
 
         // find user by email
         const user = await model.findOne({
             email: data.email,
             status: "active",
-            isVerified: true,
+            isVerified: true, // make sure the user is verified
         });
         if (!user) {
             return res
@@ -193,6 +208,7 @@ export const localSignIn = async (req, res) => {
             data.deviceType
         );
 
+        // get a clean formated object to return in the response
         const resData = userWithTokenObj(user, token);
 
         res.send(apiResponse(200, i18n.__("successfulLogin"), resData));
@@ -202,26 +218,29 @@ export const localSignIn = async (req, res) => {
     }
 };
 
+// social sign in
 export const socialSignIn = async (req, res) => {
     try {
         const data = req.body;
 
-        // Verify Firebase ID token
+        // verify firebase ID token
         const decoded = await admin.auth().verifyIdToken(data.idToken);
 
-        // Extract info from Firebase token
+        // extract info from firebase token
         const { uid, email, name, picture } = decoded;
 
+        // get model based on type
         const model = getModel(data.type);
 
+        // track if the user is new or existing
         let isNew = false;
 
-        // Try to find user by Firebase UID
+        // try to find user by Firebase UID
         let user = await model.findOne({ uId: uid });
 
         if (!user) {
+            // create new user with limited info (to be completed later)
             isNew = true;
-            // Create new user with limited info (to be completed later)
             user = await model.create({
                 firebaseUid: uid,
                 email: email || "",
@@ -232,7 +251,7 @@ export const socialSignIn = async (req, res) => {
             });
         }
 
-        // Generate own JWT
+        // generate own JWT
         const token = await afterAuth(
             user._id,
             user.type,
@@ -240,8 +259,10 @@ export const socialSignIn = async (req, res) => {
             data.deviceType
         );
 
-        // populate the country field if the user is new (pre hook wont work)
+        // populate the country field if the user is new (pre, post hook wont work)
         if (isNew) await user.populate("country");
+
+        // get a clean formated object to return in the response
         const resData = userWithTokenObj(user, token);
 
         res.send(apiResponse(200, i18n.__("successfulLogin"), resData));
@@ -251,13 +272,15 @@ export const socialSignIn = async (req, res) => {
     }
 };
 
+// verify user email by otp
 export const verifyEmail = async (req, res) => {
     try {
         const data = req.body;
 
+        // get model based on type
         const model = getModel(data.type);
 
-        // Find user by email and activation code
+        // find user by email and activation code
         const user = await model.findOne({
             email: data.email,
             status: "active",
@@ -273,12 +296,13 @@ export const verifyEmail = async (req, res) => {
                 .send(apiError(400, i18n.__("alreadyVerified")));
         }
 
+        // validate the otp
         const validOtp = otps.isOtpValid(user, data.otp);
         if (!validOtp) {
             return res.status(400).send(apiError(400, i18n.__("invalidOtp")));
         }
 
-        // Activate user
+        // activate user
         otps.resetOtp(user); // reset otp
         user.isVerified = true;
         await user.save();
@@ -292,13 +316,15 @@ export const verifyEmail = async (req, res) => {
     }
 };
 
+// verify user phone by otp
 export const verifyPhone = async (req, res) => {
     try {
         const data = req.body;
 
+        // get model based on type
         const model = getModel(data.type);
 
-        // Find user by phone and activation code
+        // find user by phone and activation code
         const user = await model.findOne({
             phone: data.phone,
             status: "active",
@@ -314,6 +340,7 @@ export const verifyPhone = async (req, res) => {
                 .send(apiError(400, i18n.__("alreadyVerified")));
         }
 
+        // validate the otp
         const validOtp = otps.isOtpValid(user, data.otp);
         if (!validOtp) {
             return res.status(400).send(apiError(400, i18n.__("invalidOtp")));
@@ -336,13 +363,16 @@ export const verifyPhone = async (req, res) => {
 // handler for completing the user data after a social login as it only provides limitied data
 export const completeData = async (req, res) => {
     try {
+        // get current signed in user
         const { sub } = req;
+
         const data = req.body;
 
+        // get model based on type
         const model = getModel(sub.userType);
 
+        // get the user document
         const user = await model.findOne({ _id: sub.id, status: "active" });
-
         if (!user) {
             return res.status(400).send(apiError(400, i18n.__("userNotFound")));
         }
@@ -364,6 +394,7 @@ export const completeData = async (req, res) => {
         Object.assign(user, data);
         await user.save();
 
+        // get a clean formated object to return in the response
         const resData = userObj(user);
 
         res.send(apiResponse(200, i18n.__("userUpdated"), resData));
@@ -373,14 +404,15 @@ export const completeData = async (req, res) => {
     }
 };
 
+// sign out the user and clear their session related data
 export const signOut = async (req, res) => {
     try {
         const { id } = req.sub;
 
-        // Invalidate user tokens
+        // delete user tokens
         await tokens.deleteAllUserTokens(id);
 
-        // Delete user devices
+        // delete user devices
         await devices.deleteAllUserDevices(id);
 
         res.send(apiResponse(200, i18n.__("userSignedOut")));
@@ -390,13 +422,15 @@ export const signOut = async (req, res) => {
     }
 };
 
+// reset password using email and otp
 export const resetPasswordEmail = async (req, res) => {
     try {
         const data = req.body;
 
+        // get model based on type
         const model = getModel(data.type);
 
-        // Find user by email
+        // find user by email
         const user = await model.findOne({
             email: data.email,
             status: "active",
@@ -412,14 +446,17 @@ export const resetPasswordEmail = async (req, res) => {
             return res.status(400).send(apiError(400, i18n.__("invalidOtp")));
         }
 
+        // reset the otp for user
         otps.resetOtp(user);
+
+        // update the user's password
         user.password = data.password;
         await user.save();
 
-        // Invalidate user tokens
+        // delete user tokens to force re-authentication
         await tokens.deleteAllUserTokens(user.id);
 
-        // Delete user devices
+        // delete user devices
         await devices.deleteAllUserDevices(user.id);
 
         res.send(apiResponse(200, i18n.__("passwordResetSuccessfully")));
@@ -429,13 +466,15 @@ export const resetPasswordEmail = async (req, res) => {
     }
 };
 
+// reset password using phone and otp
 export const resetPasswordPhone = async (req, res) => {
     try {
         const data = req.body;
 
+        // get model based on type
         const model = getModel(data.type);
 
-        // Find user by phone
+        // find user by phone
         const user = await model.findOne({
             phone: data.phone,
             status: "active",
@@ -451,14 +490,17 @@ export const resetPasswordPhone = async (req, res) => {
             return res.status(400).send(apiError(400, i18n.__("invalidOtp")));
         }
 
+        // reset the otp for user
         otps.resetOtp(user);
+
+        // update the user's password
         user.password = data.password;
         await user.save();
 
-        // Invalidate user tokens
+        // delete user tokens to force re-authentication
         await tokens.deleteAllUserTokens(user.id);
 
-        // Delete user devices
+        // delete user devices
         await devices.deleteAllUserDevices(user.id);
 
         res.send(apiResponse(200, i18n.__("passwordResetSuccessfully")));
