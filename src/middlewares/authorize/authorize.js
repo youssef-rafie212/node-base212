@@ -1,4 +1,4 @@
-import apiError from "../../helpers/api/apiError.js";
+import apiError from "../../utils/api/apiError.js";
 import Admin from "../../models/adminModel.js";
 
 const authorize = async (req, res, next) => {

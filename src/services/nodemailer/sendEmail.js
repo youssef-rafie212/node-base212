@@ -13,6 +13,14 @@ const sendEmail = async ({ to, subject, text, html }) => {
             },
         });
 
+        console.log("📧 Sending email to:", to);
+        console.log("EMAIL HOST:", process.env.EMAIL_HOST);
+        console.log("EMAIL USER:", process.env.EMAIL_USER);
+        console.log("EMAIL PASS:", process.env.EMAIL_PASS);
+        console.log("EMAIL PORT:", process.env.EMAIL_PORT);
+        console.log("EMAIL SECURE:", process.env.EMAIL_SECURE);
+
+
         // Send email
         const info = await transporter.sendMail({
             from: `"${process.env.EMAIL_FROM_NAME}" <${process.env.EMAIL_USER}>`,

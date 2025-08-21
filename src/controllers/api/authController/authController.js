@@ -1,21 +1,26 @@
 import i18n from "i18n";
-import apiError from "../../../helpers/api/apiError.js";
-import apiResponse from "../../../helpers/api/apiResponse.js";
+import apiError from "../../../utils/api/apiError.js";
+import apiResponse from "../../../utils/api/apiResponse.js";
 import getModel from "../../../helpers/modelMap/modelMap.js";
-import generateJwt from "../../../helpers/token/generateJwt.js";
-import UserToken from "../../../models/userToken.js";
-import Device from "../../../models/deviceModel.js";
-import sendEmail from "../../../services/nodemailer/sendEmail.js";
-import sendSms from "../../../services/sendSMS/sendSMS.js";
-import * as codeGeneration from "../../../utils/generateCode/generateCode.js";
-import duplicate from "../../../helpers/user/duplicate.js";
-import makeDir from "../../../helpers/makeDir/makeDir.js";
-import initId from "../../../utils/initIds/initId.js";
-import { uploadAnyFile } from "../../../helpers/fileUpload/fileUpload.js";
+import duplicate from "../../../helpers/auth/duplicate.js";
 import admin from "firebase-admin";
-import serviceAccount from "../../../../config/firebase.json";
-import * as sendVerification from "../../../helpers/user/sendVerification.js";
-import * as devices from "../../../helpers/user/devices.js";
+import * as sendVerification from "../../../helpers/auth/sendVerification.js";
+import * as devices from "../../../helpers/auth/devices.js";
+import * as tokens from "../../../helpers/auth/tokens.js";
+import * as userAvatars from "../../../helpers/user/avatars.js";
+import * as otps from "../../../helpers/auth/otps.js";
+import afterAuth from "../../../helpers/auth/afterAuth.js";
+import { generateCsrfToken } from "../../../utils/csrf/csrfConfig.js";
+import { validateCountryExists } from "../../../helpers/country/validateCountry.js";
+import {
+    userObj,
+    userWithTokenObj,
+} from "../../../utils/returnObject/returnObject.js";
+
+export const getCsrfToken = (req, res) => {
+    const token = generateCsrfToken(req, res);
+    res.send(apiResponse(200, i18n.__("tokenGenerated"), { token }));
+};
 
 export const signUp = async (req, res) => {
     try {
@@ -28,7 +33,9 @@ export const signUp = async (req, res) => {
         if (data.email) {
             const isDuplicate = await duplicate(model, "email", data.email);
             if (isDuplicate) {
-                return res.send(apiError(400, i18n.__("emailExists")));
+                return res
+                    .status(400)
+                    .send(apiError(400, i18n.__("emailExists")));
             }
         }
 
@@ -40,75 +47,115 @@ export const signUp = async (req, res) => {
                 data.phone
             );
             if (isPhoneDuplicate) {
-                return res.send(apiError(400, i18n.__("phoneExists")));
+                return res
+                    .status(400)
+                    .send(apiError(400, i18n.__("phoneExists")));
             }
         }
 
-        // handle file uploads
-        const id = initId();
-        if (req.files?.avatar) {
-            const dir = makeDir(`users/${id}`);
-            const image = await uploadAnyFile(
-                req,
-                "image",
-                dir,
-                "avatar",
-                500,
-                500
-            );
-            data.avatar = image;
+        // validate country if exists
+        if (data.country) {
+            const isCountryValid = await validateCountryExists(data.country);
+            if (!isCountryValid) {
+                return res
+                    .status(400)
+                    .send(apiError(400, i18n.__("invalidCountry")));
+            }
         }
+
+        // handle avatar upload if it exists in the request
+        const id = await userAvatars.uploadAvatar(req, data);
 
         // set dataCompleted as true
         data.dataCompleted = true;
 
         // generate a user token
-        const token = generateJwt(id, data.type);
-        await UserToken.create({ userId: id, token, userRef: data.type });
-
-        // add the user device to stored devices
-        if (data.fcmToken) {
-            await devices.addUserDevice(
-                id,
-                data.fcmToken,
-                data.type,
-                data.deviceType
-            );
-        }
-
-        let otp = "";
-        // send otp sms for phone verification
-        if (data.phone) {
-            otp = await sendVerification.sendVerificationBySMS(
-                data.phone,
-                "phoneVerificationSms"
-            );
-        }
-
-        // send otp email for email verification
-        if (data.email) {
-            otp = await sendVerification.sendVerificationByEmail(
-                data.email,
-                "emailVerificationEmail",
-                "emailVerificationEmailText",
-                "emailVerificationEmailHtml"
-            );
-        }
-
-        // store otp for user
-        data.activationCode = otp;
+        const token = await afterAuth(
+            id,
+            data.type,
+            data.fcmToken,
+            data.deviceType
+        );
 
         const user = await model.create({ _id: id, ...data });
+        await user.populate("country");
+        const resData = userWithTokenObj(user, token);
 
-        res.send(
-            apiResponse(200, i18n.__("successfulSignup"), {
-                userId: user._id,
-                token,
-            })
-        );
+        res.send(apiResponse(200, i18n.__("successfulSignup"), resData));
     } catch (error) {
         console.log(error);
-        res.send(apiError(500, i18n.__("returnDeveloper")));
+        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
+    }
+};
+
+export const requestOtpEmail = async (req, res) => {
+    try {
+        const data = req.body;
+
+        const model = getModel(data.type);
+
+        // find user by email
+        const user = await model.findOne({
+            email: data.email,
+            status: "active",
+        });
+        if (!user) {
+            return res.status(400).send(apiError(400, i18n.__("userNotFound")));
+        }
+
+        // generate and send OTP
+        const otp = await sendVerification.sendVerificationByEmail(
+            user.email,
+            "otpSentEmail",
+            "otpSentEmailText",
+            "otpSentEmailHtml"
+        );
+
+        // store OTP for user
+        otps.setOtp(user, otp);
+        await user.save();
+
+        res.send(apiResponse(200, i18n.__("otpSent"), { email: user.email }));
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
+    }
+};
+
+export const requestOtpPhone = async (req, res) => {
+    try {
+        const data = req.body;
+
+        const model = getModel(data.type);
+
+        // find user by phone
+        const user = await model.findOne({
+            phone: data.phone,
+            status: "active",
+        });
+        if (!user) {
+            return res.status(400).send(apiError(400, i18n.__("userNotFound")));
+        }
+
+        // generate and send OTP
+        const { otp, smsResponse } =
+            await sendVerification.sendVerificationBySMS(
+                user.phone,
+                "otpSentSms"
+            );
+
+        if (!smsResponse) {
+            return res.status(500).send(apiError(500, i18n.__("smsNotSent")));
+        }
+
+        // store OTP for user
+        otps.setOtp(user, otp);
+        await user.save();
+
+        res.send(apiResponse(200, i18n.__("otpSent"), { phone: user.phone }));
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
     }
 };
 
@@ -118,62 +165,46 @@ export const localSignIn = async (req, res) => {
 
         const model = getModel(data.type);
 
-        // Find user by email
+        // find user by email
         const user = await model.findOne({
             email: data.email,
             status: "active",
+            isVerified: true,
         });
         if (!user) {
-            return res.send(apiError(404, i18n.__("invalidCredentials")));
+            return res
+                .status(401)
+                .send(apiError(401, i18n.__("invalidCredentials")));
         }
 
-        // Check password
+        // check password
         const isMatch = await user.comparePassword(data.password);
         if (!isMatch) {
-            return res.send(apiError(401, i18n.__("invalidCredentials")));
+            return res
+                .status(401)
+                .send(apiError(401, i18n.__("invalidCredentials")));
         }
 
-        // Generate token
-        const token = generateJwt(user.id, data.type);
-        await UserToken.create({
-            userId: user.id,
-            token,
-            userRef: data.type,
-        });
-
-        // add the user device to stored devices
-        if (data.fcmToken) {
-            await devices.addUserDevice(
-                user._id,
-                data.fcmToken,
-                data.type,
-                data.deviceType
-            );
-        }
-
-        res.send(
-            apiResponse(200, i18n.__("successfulLogin"), {
-                userId: user._id,
-                token,
-            })
+        // generate token
+        const token = await afterAuth(
+            user._id,
+            user.type,
+            data.fcmToken,
+            data.deviceType
         );
+
+        const resData = userWithTokenObj(user, token);
+
+        res.send(apiResponse(200, i18n.__("successfulLogin"), resData));
     } catch (error) {
         console.log(error);
-        res.send(apiError(500, i18n.__("returnDeveloper")));
+        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
     }
 };
 
 export const socialSignIn = async (req, res) => {
     try {
         const data = req.body;
-
-        // Initialize Firebase Admin SDK if not already initialized
-        if (!admin.apps.length) {
-            // Path to your Firebase config
-            admin.initializeApp({
-                credential: admin.credential.cert(serviceAccount),
-            });
-        }
 
         // Verify Firebase ID token
         const decoded = await admin.auth().verifyIdToken(data.idToken);
@@ -183,10 +214,13 @@ export const socialSignIn = async (req, res) => {
 
         const model = getModel(data.type);
 
+        let isNew = false;
+
         // Try to find user by Firebase UID
         let user = await model.findOne({ uId: uid });
 
         if (!user) {
+            isNew = true;
             // Create new user with limited info (to be completed later)
             user = await model.create({
                 firebaseUid: uid,
@@ -194,33 +228,26 @@ export const socialSignIn = async (req, res) => {
                 name: name || "",
                 avatar: picture || "",
                 dataCompleted: false,
+                isVerified: true,
             });
         }
 
-        // Generate your own JWT for session
-        const token = generateJwt(user.id, data.type);
-        await UserToken.create({ userId: user.id, token, userRef: data.type });
-
-        // Store device
-        if (data.fcmToken) {
-            await devices.addUserDevice(
-                user._id,
-                data.fcmToken,
-                data.type,
-                data.deviceType
-            );
-        }
-
-        res.send(
-            apiResponse(200, i18n.__("successfulLogin"), {
-                userId: user._id,
-                token,
-                dataCompleted: user.dataCompleted,
-            })
+        // Generate own JWT
+        const token = await afterAuth(
+            user._id,
+            user.type,
+            data.fcmToken,
+            data.deviceType
         );
+
+        // populate the country field if the user is new (pre hook wont work)
+        if (isNew) await user.populate("country");
+        const resData = userWithTokenObj(user, token);
+
+        res.send(apiResponse(200, i18n.__("successfulLogin"), resData));
     } catch (error) {
         console.log(error);
-        res.send(apiError(401, i18n.__("invalidFirebaseToken")));
+        res.status(401).send(apiError(401, i18n.__("invalidFirebaseToken")));
     }
 };
 
@@ -236,15 +263,23 @@ export const verifyEmail = async (req, res) => {
             status: "active",
         });
         if (!user) {
-            return res.send(apiError(404, i18n.__("userNotFound")));
+            return res.status(400).send(apiError(400, i18n.__("userNotFound")));
         }
 
-        if (user.activationCode !== data.otp) {
-            return res.send(apiError(404, i18n.__("invalidOtp")));
+        // check if user is already verified
+        if (user.isVerified) {
+            return res
+                .status(400)
+                .send(apiError(400, i18n.__("alreadyVerified")));
+        }
+
+        const validOtp = otps.isOtpValid(user, data.otp);
+        if (!validOtp) {
+            return res.status(400).send(apiError(400, i18n.__("invalidOtp")));
         }
 
         // Activate user
-        user.activationCode = "";
+        otps.resetOtp(user); // reset otp
         user.isVerified = true;
         await user.save();
 
@@ -253,7 +288,7 @@ export const verifyEmail = async (req, res) => {
         );
     } catch (error) {
         console.log(error);
-        res.send(apiError(500, i18n.__("returnDeveloper")));
+        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
     }
 };
 
@@ -269,15 +304,23 @@ export const verifyPhone = async (req, res) => {
             status: "active",
         });
         if (!user) {
-            return res.send(apiError(404, i18n.__("userNotFound")));
+            return res.status(400).send(apiError(400, i18n.__("userNotFound")));
         }
 
-        if (user.activationCode !== data.otp) {
-            return res.send(apiError(404, i18n.__("invalidOtp")));
+        // check if user is already verified
+        if (user.isVerified) {
+            return res
+                .status(400)
+                .send(apiError(400, i18n.__("alreadyVerified")));
+        }
+
+        const validOtp = otps.isOtpValid(user, data.otp);
+        if (!validOtp) {
+            return res.status(400).send(apiError(400, i18n.__("invalidOtp")));
         }
 
         // Activate user
-        user.activationCode = "";
+        otps.resetOtp(user); // reset otp
         user.isVerified = true;
         await user.save();
 
@@ -286,22 +329,33 @@ export const verifyPhone = async (req, res) => {
         );
     } catch (error) {
         console.log(error);
-        res.send(apiError(500, i18n.__("returnDeveloper")));
+        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
     }
 };
 
 // handler for completing the user data after a social login as it only provides limitied data
 export const completeData = async (req, res) => {
     try {
-        const data = req.data;
+        const { sub } = req;
+        const data = req.body;
 
-        const model = getModel(data.type);
+        const model = getModel(sub.userType);
 
-        const user = await model.findById(data.id);
+        const user = await model.findOne({ _id: sub.id, status: "active" });
 
         if (!user) {
-            return res.send(apiError(404, i18n.__("userNotFound")));
+            return res.status(400).send(apiError(400, i18n.__("userNotFound")));
         }
+
+        // check if user already completed data
+        if (user.dataCompleted) {
+            return res
+                .status(400)
+                .send(apiError(400, i18n.__("dataAlreadyCompleted")));
+        }
+
+        // handle avatar upload if it exists in the request
+        await userAvatars.uploadAvatar(req, data, user._id);
 
         // set dataCompleted as true
         data.dataCompleted = true;
@@ -310,12 +364,12 @@ export const completeData = async (req, res) => {
         Object.assign(user, data);
         await user.save();
 
-        res.send(
-            apiResponse(200, i18n.__("userUpdated"), { userId: user._id })
-        );
+        const resData = userObj(user);
+
+        res.send(apiResponse(200, i18n.__("userUpdated"), resData));
     } catch (error) {
         console.log(error);
-        res.send(apiError(500, i18n.__("returnDeveloper")));
+        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
     }
 };
 
@@ -323,79 +377,16 @@ export const signOut = async (req, res) => {
     try {
         const { id } = req.sub;
 
-        // Invalidate user token
-        await UserToken.deleteMany({ userId: id });
+        // Invalidate user tokens
+        await tokens.deleteAllUserTokens(id);
 
         // Delete user devices
-        await Device.deleteMany({ userId: id });
+        await devices.deleteAllUserDevices(id);
 
         res.send(apiResponse(200, i18n.__("userSignedOut")));
     } catch (error) {
         console.log(error);
-        res.send(apiError(500, i18n.__("returnDeveloper")));
-    }
-};
-
-export const forgotPasswordEmail = async (req, res) => {
-    try {
-        const data = req.body;
-
-        const model = getModel(data.type);
-
-        // Find user by email
-        const user = await model.findOne({
-            email: data.email,
-            status: "active",
-        });
-        if (!user) {
-            return res.send(apiError(404, i18n.__("userNotFound")));
-        }
-
-        // Send reset otp to email
-        const otp = codeGeneration.generateOtp();
-        await sendEmail({
-            to: data.email,
-            subject: i18n.__("passwordResetEmail"),
-            text: i18n.__("passwordResetEmailText", { otp }),
-            html: i18n.__("passwordResetEmailHtml", { otp }),
-        });
-
-        user.verificationCode = otp;
-        await user.save();
-
-        res.send(apiResponse(200, i18n.__("passwordResetEmailSent")));
-    } catch (error) {
-        console.log(error);
-        res.send(apiError(500, i18n.__("returnDeveloper")));
-    }
-};
-
-export const forgotPasswordPhone = async (req, res) => {
-    try {
-        const data = req.body;
-
-        const model = getModel(data.type);
-
-        // Find user by phone
-        const user = await model.findOne({
-            phone: data.phone,
-            status: "active",
-        });
-        if (!user) {
-            return res.send(apiError(404, i18n.__("userNotFound")));
-        }
-
-        // Send reset otp to phone
-        const otp = codeGeneration.generateOtp();
-        await sendSms(data.phone, i18n.__("passwordResetSms", { otp }));
-
-        user.verificationCode = otp;
-        await user.save();
-
-        res.send(apiResponse(200, i18n.__("passwordResetSmsSent")));
-    } catch (error) {
-        console.log(error);
-        res.send(apiError(500, i18n.__("returnDeveloper")));
+        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
     }
 };
 
@@ -409,24 +400,32 @@ export const resetPasswordEmail = async (req, res) => {
         const user = await model.findOne({
             email: data.email,
             status: "active",
+            isVerified: true,
         });
         if (!user) {
-            return res.send(apiError(404, i18n.__("userNotFound")));
+            return res.status(400).send(apiError(400, i18n.__("userNotFound")));
         }
 
         // verify the otp
-        if (user.verificationCode !== data.otp) {
-            return res.send(apiError(400, i18n.__("invalidOtp")));
+        const validOtp = otps.isOtpValid(user, data.otp);
+        if (!validOtp) {
+            return res.status(400).send(apiError(400, i18n.__("invalidOtp")));
         }
 
+        otps.resetOtp(user);
         user.password = data.password;
-        user.verificationCode = "";
         await user.save();
+
+        // Invalidate user tokens
+        await tokens.deleteAllUserTokens(user.id);
+
+        // Delete user devices
+        await devices.deleteAllUserDevices(user.id);
 
         res.send(apiResponse(200, i18n.__("passwordResetSuccessfully")));
     } catch (error) {
         console.log(error);
-        res.send(apiError(500, i18n.__("returnDeveloper")));
+        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
     }
 };
 
@@ -440,23 +439,31 @@ export const resetPasswordPhone = async (req, res) => {
         const user = await model.findOne({
             phone: data.phone,
             status: "active",
+            isVerified: true,
         });
         if (!user) {
-            return res.send(apiError(404, i18n.__("userNotFound")));
+            return res.status(400).send(apiError(400, i18n.__("userNotFound")));
         }
 
         // verify the otp
-        if (user.verificationCode !== data.otp) {
-            return res.send(apiError(400, i18n.__("invalidOtp")));
+        const validOtp = otps.isOtpValid(user, data.otp);
+        if (!validOtp) {
+            return res.status(400).send(apiError(400, i18n.__("invalidOtp")));
         }
 
+        otps.resetOtp(user);
         user.password = data.password;
-        user.verificationCode = "";
         await user.save();
+
+        // Invalidate user tokens
+        await tokens.deleteAllUserTokens(user.id);
+
+        // Delete user devices
+        await devices.deleteAllUserDevices(user.id);
 
         res.send(apiResponse(200, i18n.__("passwordResetSuccessfully")));
     } catch (error) {
         console.log(error);
-        res.send(apiError(500, i18n.__("returnDeveloper")));
+        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
     }
 };

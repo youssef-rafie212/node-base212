@@ -1,11 +1,11 @@
 import { validationResult } from "express-validator";
-import apiError from "../../helpers/api/apiError.js";
+import apiError from "../../utils/api/apiError.js";
 
 const validateRequest = (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         const firstError = errors.array()[0];
-        return res.send(apiError(400, firstError.msg));
+        return res.status(400).send(apiError(400, firstError.msg));
     }
     next();
 };

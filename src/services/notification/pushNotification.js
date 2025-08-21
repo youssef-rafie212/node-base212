@@ -8,15 +8,6 @@ import {
 import Setting from "../../models/settingsModel.js";
 import Device from "../../models/deviceModel.js";
 import Notification from "../../models/notificationModel.js";
-import serviceAccount from "../../../config/firebase.json";
-
-// Initialize Firebase Admin SDK
-if (!admin.apps.length) {
-    // Path to your Firebase config
-    admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-    });
-}
 
 /**
  * Handles notifications for different users and scenarios.
@@ -37,7 +28,7 @@ export const handleNotification = async (
             title: setting.appTitle,
         };
 
-        const objNotify = returnObject.objNotify(
+        const objNotify = returnObject.notifyObj(
             objUsers,
             objSetting,
             objMessage,
@@ -63,7 +54,7 @@ export const handleNotification = async (
 
             await Promise.all(
                 devices.map((device) => {
-                    const objSendNotify = returnObject.objSendNotify(
+                    const objSendNotify = returnObject.sendNotifyObj(
                         device.fcmToken,
                         objSetting,
                         objMessage,

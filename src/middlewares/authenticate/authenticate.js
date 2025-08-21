@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import UserToken from "../../models/userToken.js";
 import i18n from "i18n";
-import apiError from "../../helpers/api/apiError.js";
+import apiError from "../../utils/api/apiError.js";
 import getModel from "../../helpers/modelMap/modelMap.js";
 
 const authenticate = (req, res, next) => {

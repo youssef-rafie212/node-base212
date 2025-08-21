@@ -8,14 +8,39 @@ import expressFileUpload from "express-fileupload";
 import morgan from "morgan";
 import xss from "xss-clean";
 import mongoSanitize from "express-mongo-sanitize";
-import apiError from "./helpers/api/apiError.js";
+import apiError from "./utils/api/apiError.js";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+import path from "path";
+import globalErrorHandler from "./utils/error/globalErrorHandler.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+import authRouter from "./routes/api/authRoutes.js";
 
 const app = express();
 
 // Middlewares
+i18n.configure({
+    defaultLocale: "ar",
+    locales: ["ar", "en"],
+    directory: path.join(__dirname, "locales"),
+    register: global,
+});
+
+app.use(i18n.init);
+
+app.use((req, res, next) => {
+    const lang = req.headers.lang || "ar";
+    i18n.setLocale(lang);
+    req.lang = lang;
+    next();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static("../public"));
+app.use(express.static(path.join(__dirname, "..", "public")));
 app.use(cookieParser());
 app.use(
     cors({
@@ -38,25 +63,15 @@ app.use(
     })
 );
 
-// i18n
-i18n.configure({
-    defaultLocale: "ar",
-    locales: ["ar", "en"],
-    directory: "./locales",
-});
-app.use(i18n.init);
-app.use((req, res, next) => {
-    const lang = req.headers.lang || "ar";
-    i18n.setLocale(req, lang);
-    next();
+// API Routes
+app.use("/api/v1/auth", authRouter);
+
+// Fallback Route
+app.use((req, res) => {
+    res.send(apiError(404, i18n.__("notFound")));
 });
 
 // Global error handler
-app.use((err, req, res, next) => {
-    console.error(err);
-    res.send(
-        apiError(err.status || 500, err.message || "Internal Server Error")
-    );
-});
+app.use(globalErrorHandler);
 
 export default app;

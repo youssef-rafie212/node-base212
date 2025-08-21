@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const initId = async () => {
+const initId = () => {
     const id = new mongoose.Types.ObjectId();
     return id;
 };

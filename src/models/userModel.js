@@ -18,11 +18,11 @@ const userSchema = new mongoose.Schema(
         timeZone: { type: String },
         gender: { type: String, enum: ["male", "female"] },
         uId: { type: String }, // unique id for user from firebase
-        userType: {
+        type: {
             type: String,
             require: true,
-            default: "guest",
-            enum: ["guest", "user"],
+            default: "User",
+            enum: ["User"],
         },
         status: {
             type: String,
@@ -30,6 +30,7 @@ const userSchema = new mongoose.Schema(
             default: "active",
         },
         activationCode: { type: String, default: "" },
+        activationExpiresAt: { type: Date },
         language: { type: String, enum: ["ar", "en"], default: "ar" },
         isNotify: { type: Boolean, enum: [true, false], default: true },
         notifyCount: { type: Number, default: 0 },
@@ -43,6 +44,11 @@ userSchema.pre("save", async function (next) {
     if (this.isModified("password")) {
         this.password = await bcrypt.hash(this.password, 12);
     }
+    next();
+});
+
+userSchema.pre(/^find/, function (next) {
+    this.populate("country");
     next();
 });
 
