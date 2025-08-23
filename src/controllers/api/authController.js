@@ -1,22 +1,22 @@
 import i18n from "i18n";
-import apiError from "../../../utils/api/apiError.js";
-import apiResponse from "../../../utils/api/apiResponse.js";
-import getModel from "../../../helpers/modelMap/modelMap.js";
-import duplicate from "../../../helpers/auth/duplicate.js";
+import apiError from "../../utils/api/apiError.js";
+import apiResponse from "../../utils/api/apiResponse.js";
+import getModel from "../../helpers/modelMap/modelMap.js";
+import duplicate from "../../helpers/auth/duplicate.js";
 import admin from "firebase-admin";
 
-import * as sendVerification from "../../../helpers/auth/sendVerification.js";
-import * as devices from "../../../helpers/auth/devices.js";
-import * as tokens from "../../../helpers/auth/tokens.js";
-import * as userAvatars from "../../../helpers/user/avatars.js";
-import * as otps from "../../../helpers/auth/otps.js";
-import afterAuth from "../../../helpers/auth/afterAuth.js";
-import { generateCsrfToken } from "../../../utils/csrf/csrfConfig.js";
-import { validateCountryExists } from "../../../helpers/country/validateCountry.js";
+import * as sendVerification from "../../helpers/auth/sendVerification.js";
+import * as devices from "../../helpers/auth/devices.js";
+import * as tokens from "../../helpers/auth/tokens.js";
+import * as userAvatars from "../../helpers/user/avatars.js";
+import * as otps from "../../helpers/auth/otps.js";
+import afterAuth from "../../helpers/auth/afterAuth.js";
+import { generateCsrfToken } from "../../utils/csrf/csrfConfig.js";
+import { validateCountryExists } from "../../helpers/country/validateCountry.js";
 import {
     userObj,
     userWithTokenObj,
-} from "../../../utils/returnObject/returnObject.js";
+} from "../../utils/returnObject/returnObject.js";
 
 // generate a csrf token for the current request
 export const getCsrfToken = (req, res) => {

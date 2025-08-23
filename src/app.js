@@ -91,7 +91,7 @@ app.use("/api/v1/auth", authRouter);
 
 // fallback route (404)
 app.use((req, res) => {
-    res.send(apiError(404, i18n.__("notFound")));
+    res.status(404).send(apiError(404, i18n.__("notFound")));
 });
 
 // global error handler
