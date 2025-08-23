@@ -7,7 +7,64 @@ import SaveImage from "../fileSave/fileSave.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// general handler for any file type
+// build upload path
+const getUploadPath = (dir, filename = "") =>
+    path.join(
+        __dirname,
+        "..",
+        "..",
+        "..",
+        "public",
+        "assets",
+        "uploads",
+        dir,
+        filename
+    );
+
+// handle multiple files based on config
+export const uploadMultipleFiles = async (req, filesConfig) => {
+    try {
+        const results = {};
+
+        for (const config of filesConfig) {
+            const { type, name, width, height, dir } = config;
+
+            const fileArray = req.files?.[name];
+            const files = Array.isArray(fileArray)
+                ? fileArray
+                : fileArray
+                ? [fileArray]
+                : [];
+
+            if (!files.length) {
+                results[name] = [];
+                continue;
+            }
+
+            const uploaded = [];
+            for (const file of files) {
+                const uploadedFile = await uploadAnyFile(
+                    { files: { [name]: file } },
+                    type,
+                    dir,
+                    name,
+                    width,
+                    height
+                );
+                uploaded.push(uploadedFile);
+            }
+
+            results[name] = uploaded;
+        }
+
+        return results;
+    } catch (error) {
+        console.error("Multiple file upload error:", error);
+        throw error;
+    }
+};
+
+// general handler for any file type (single file)
 export const uploadAnyFile = async (
     request,
     type,
@@ -17,159 +74,82 @@ export const uploadAnyFile = async (
     height
 ) => {
     try {
-        let file = "";
-        if (type === "image") {
-            file = await handleUploadAnyImage(
-                request,
-                dir,
-                name,
-                width,
-                height
-            );
-        } else if (type === "pdf") {
-            file = await handleUploadPdf(request, dir, name);
-        } else {
-            file = await handleVideo(request, dir, name, type);
-        }
-        return file;
-    } catch (error) {
-        console.error("File upload error:", error);
-        throw error;
-    }
-};
-
-// handle image uploads
-export const handleUploadAnyImage = async (
-    request,
-    dir,
-    imageName,
-    width,
-    height
-) => {
-    try {
-        // define upload path
-        let pathUpload = path.join(
-            __dirname,
-            "..",
-            "..",
-            "..",
-            "public",
-            "assets",
-            "uploads",
-            dir
-        );
-
-        // create fileSave instance
-        let fileUpload = new SaveImage(pathUpload);
-
-        // initialize image processing results
-        let results = [];
-
-        if (request.files && request.files[imageName]) {
-            // multiple images
-            if (Array.isArray(request.files[imageName])) {
-                for (const file of request.files[imageName]) {
-                    const images = await fileUpload.save(
-                        file.data,
-                        file.name,
-                        file.name.split(".").pop(),
-                        width,
-                        height
-                    );
-                    results.push(images);
-                }
-            } else {
-                // single image
-                const image = await fileUpload.save(
-                    request.files[imageName].data,
-                    request.files[imageName].name,
-                    request.files[imageName].name.split(".").pop(),
+        switch (type) {
+            case "image":
+                return await handleUploadImage(
+                    request,
+                    dir,
+                    name,
                     width,
                     height
                 );
-                results.push(image);
-            }
+            case "pdf":
+                return await handleUploadPdf(request, dir, name);
+            case "video":
+                return await handleUploadVideo(request, dir, name);
+            case "audio":
+                return await handleUploadAudio(request, dir, name);
+            case "excel":
+                return await handleUploadExcel(request, dir, name);
+            case "txt":
+                return await handleUploadTxt(request, dir, name);
+            case "record":
+                return await handleUploadRecord(request, dir, name);
+            default:
+                throw new Error("Unsupported file type.");
         }
-
-        // return results
-        return Array.isArray(results) && results.length > 1
-            ? results
-            : results[0];
-    } catch (error) {
-        console.error("Image upload error:", error);
-        throw error;
-    }
-};
-
-// handle video uploads
-export const handleVideo = async (request, dir, name, type) => {
-    try {
-        // check if the file exists in the request
-        if (!request.files || !request.files[name]) {
-            throw new Error("No video file provided.");
-        }
-
-        // get the file from the request
-        const file = request.files[name];
-
-        // generate a unique file name
-        const fileName =
-            "video" + Math.floor(Math.random() * 100) + Date.now() + `.${type}`;
-
-        // define the upload path
-        const uploadPath = path.join(
-            __dirname,
-            "..",
-            "..",
-            "..",
-            "public",
-            "assets",
-            "uploads",
-            dir,
-            fileName
-        );
-
-        // move the file to the specified upload path
-        await file.mv(uploadPath);
-
-        // return the uploaded file name
-        return fileName;
-    } catch (error) {
-        console.error("Video upload error:", error);
-        throw error;
-    }
-};
-
-// handle pdf uploads
-export const handleUploadPdf = async (req, dir, name) => {
-    try {
-        // get the file from request
-        const file = req.files[name];
-
-        // generate a unique file name
-        const fileName =
-            "pdf" + Math.floor(Math.random() * 100) + Date.now() + ".pdf";
-
-        // define the upload path
-        const uploadPath = path.join(
-            __dirname,
-            "..",
-            "..",
-            "..",
-            "public",
-            "assets",
-            "uploads",
-            dir,
-            fileName
-        );
-
-        // move the file to the upload path
-        await file.mv(uploadPath);
-
-        // return the file name if upload is successful
-        return fileName;
     } catch (error) {
         console.error("File upload error:", error);
         throw error;
     }
 };
+
+// single image upload
+export const handleUploadImage = async (req, dir, name, width, height) => {
+    const file = req.files?.[name];
+    if (!file || !file.size) throw new Error("No image file provided.");
+
+    const fileUpload = new SaveImage(getUploadPath(dir));
+
+    return await fileUpload.save(
+        file.data,
+        file.name,
+        path.extname(file.name).slice(1).toLowerCase(),
+        width,
+        height
+    );
+};
+
+// generic file save handler
+const saveFile = async (file, dir, prefix, allowedExtensions = []) => {
+    if (!file || !file.size) throw new Error("No file provided.");
+
+    const ext = path.extname(file.name).toLowerCase().replace(".", "");
+    if (allowedExtensions.length && !allowedExtensions.includes(ext)) {
+        throw new Error(
+            `Invalid file type. Allowed types: ${allowedExtensions.join(", ")}`
+        );
+    }
+
+    const fileName = `${prefix}${Math.floor(
+        Math.random() * 100
+    )}${Date.now()}.${ext}`;
+    const uploadPath = getUploadPath(dir, fileName);
+
+    await file.mv(uploadPath);
+    return fileName;
+};
+
+// specific handlers
+export const handleUploadPdf = (req, dir, name) =>
+    saveFile(req.files[name], dir, "pdf", ["pdf"]);
+export const handleUploadVideo = (req, dir, name) =>
+    saveFile(req.files[name], dir, "video", ["mp4"]);
+export const handleUploadAudio = (req, dir, name) =>
+    saveFile(req.files[name], dir, "audio", ["mp3"]);
+export const handleUploadExcel = (req, dir, name) =>
+    saveFile(req.files[name], dir, "excel", ["xlsx"]);
+export const handleUploadTxt = (req, dir, name) =>
+    saveFile(req.files[name], dir, "txt", ["txt"]);
+export const handleUploadRecord = (req, dir, name) =>
+    saveFile(req.files[name], dir, "record", ["wav"]);
