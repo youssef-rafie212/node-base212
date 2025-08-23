@@ -124,7 +124,7 @@ export const handleUploadImage = async (req, dir, name, width, height) => {
 const saveFile = async (file, dir, prefix, allowedExtensions = []) => {
     if (!file || !file.size) throw new Error("No file provided.");
 
-    const ext = path.extname(file.name).toLowerCase().replace(".", "");
+    const ext = path.extname(file.name).slice(1).toLowerCase();
     if (allowedExtensions.length && !allowedExtensions.includes(ext)) {
         throw new Error(
             `Invalid file type. Allowed types: ${allowedExtensions.join(", ")}`
