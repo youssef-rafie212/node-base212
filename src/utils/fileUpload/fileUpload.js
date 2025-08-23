@@ -109,9 +109,9 @@ export const handleUploadImage = async (req, dir, name, width, height) => {
     const file = req.files?.[name];
     if (!file || !file.size) throw new Error("No image file provided.");
 
-    const fileUpload = new SaveImage(getUploadPath(dir));
+    const imageSaver = new SaveImage(getUploadPath(dir));
 
-    return await fileUpload.save(
+    return await imageSaver.save(
         file.data,
         file.name,
         path.extname(file.name).slice(1).toLowerCase(),
