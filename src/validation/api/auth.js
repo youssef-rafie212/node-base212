@@ -1,6 +1,22 @@
 import { body, query, param, check } from "express-validator";
 import i18n from "i18n";
 
+export const validateGenerateToken = [
+    body("type")
+        .trim()
+        .notEmpty()
+        .withMessage(() => i18n.__("typeRequired"))
+        .isIn(["User"])
+        .withMessage(() => i18n.__("invalidType")),
+
+    body("id")
+        .trim()
+        .notEmpty()
+        .withMessage(() => i18n.__("idRequired"))
+        .isMongoId()
+        .withMessage(() => i18n.__("invalidId")),
+];
+
 export const validateSignUp = [
     body("type")
         .trim()
@@ -20,7 +36,7 @@ export const validateSignUp = [
         .trim()
         .notEmpty()
         .withMessage(() => i18n.__("phoneRequired"))
-        .isMobilePhone()
+        .isMobilePhone("any")
         .withMessage(() => i18n.__("invalidPhone")),
 
     body("password")
@@ -75,6 +91,13 @@ export const validateSignUp = [
         .isMongoId()
         .withMessage(() => i18n.__("invalidCountry")),
 
+    body("gender")
+        .optional()
+        .trim()
+        .notEmpty()
+        .withMessage(() => i18n.__("genderRequired"))
+        .isIn(["male", "female"])
+        .withMessage(() => i18n.__("invalidGender")),
     // other fields ...
 ];
 
@@ -106,7 +129,7 @@ export const validateRequestOtpPhone = [
         .trim()
         .notEmpty()
         .withMessage(() => i18n.__("phoneRequired"))
-        .isMobilePhone()
+        .isMobilePhone("any")
         .withMessage(() => i18n.__("invalidPhone")),
 ];
 
@@ -193,7 +216,7 @@ export const validateVerifyPhone = [
 
 export const validateCompleteData = [
     // just a test field
-    body("uId")
+    body("type")
         .trim()
         .notEmpty()
         .withMessage(() => i18n.__("typeRequired"))
@@ -255,7 +278,7 @@ export const validateResetPasswordPhone = [
         .trim()
         .notEmpty()
         .withMessage(() => i18n.__("phoneRequired"))
-        .isMobilePhone()
+        .isMobilePhone("any")
         .withMessage(() => i18n.__("invalidPhone")),
 
     body("password")

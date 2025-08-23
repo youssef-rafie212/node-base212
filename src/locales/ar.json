@@ -46,5 +46,13 @@
     "otpSentEmailHtml": "<p>رمز التحقق الخاص بك هو <strong>{{otp}}</strong>.</p>",
     "smsNotSent": "لم يتم إرسال الرسالة النصية.",
     "idTokenRequired": "معرف الرمز مطلوب.",
-    "dataAlreadyCompleted": "تم إكمال بيانات المستخدم بالفعل."
+    "dataAlreadyCompleted": "تم إكمال بيانات المستخدم بالفعل.",
+    "userFetched": "تم جلب بيانات المستخدمين بنجاح.",
+    "idRequired": "المعرف مطلوب",
+    "invalidId": "المعرف غير صالح",
+    "genderRequired": "الجنس مطلوب.",
+    "languageRequired": "اللغة مطلوبة.",
+    "invalidLanguage": "اللغة غير صالحة.",
+    "languageUpdated": "تم تحديث اللغة بنجاح.",
+    "userDeleted": "تم حذف المستخدم بنجاح."
 }

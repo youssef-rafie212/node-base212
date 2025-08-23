@@ -7,7 +7,7 @@ const authorize = async (req, res, next) => {
         // find admin by id
         const admin = await Admin.findById(req.sub.id).populate("role");
         if (!admin) {
-            return res.send(apiError(403, i18n.__("forbidden")));
+            return res.status(403).send(apiError(403, i18n.__("forbidden")));
         }
 
         // get admin permissions
@@ -26,12 +26,12 @@ const authorize = async (req, res, next) => {
 
         // check if the admin has permission for the requested URL
         if (!adminPermissions.includes(sanitizedUrl)) {
-            return res.send(apiError(403, i18n.__("forbidden")));
+            return res.status(403).send(apiError(403, i18n.__("forbidden")));
         }
 
         next();
     } catch (error) {
-        res.send(apiError(500, i18n.__("returnDeveloper")));
+        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
     }
 };
 

@@ -5,7 +5,6 @@ import helmet from "helmet";
 import expressRateLimit from "express-rate-limit";
 import i18n from "i18n";
 import expressFileUpload from "express-fileupload";
-import morgan from "morgan";
 import xss from "xss-clean";
 import mongoSanitize from "express-mongo-sanitize";
 import { fileURLToPath } from "url";
@@ -15,6 +14,8 @@ import path from "path";
 import apiError from "./utils/api/apiError.js";
 import globalErrorHandler from "./utils/error/globalErrorHandler.js";
 import authRouter from "./routes/api/authRoutes.js";
+import userRouter from "./routes/api/userRoutes.js";
+import morgan from "morgan";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -88,6 +89,8 @@ app.use(
 
 // api routes
 app.use("/api/v1/auth", authRouter);
+
+app.use("/api/v1/users", userRouter);
 
 // fallback route (404)
 app.use((req, res) => {

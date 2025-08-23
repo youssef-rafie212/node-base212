@@ -22,7 +22,9 @@ const authenticate = (req, res, next) => {
             process.env.JWT_SECRET || "default_secret",
             async (err, decoded) => {
                 if (err) {
-                    return res.send(apiError(401, i18n.__("unauthorized")));
+                    return res
+                        .status(401)
+                        .send(apiError(401, i18n.__("unauthorized")));
                 }
 
                 // get model based on user type
@@ -34,7 +36,9 @@ const authenticate = (req, res, next) => {
 
                 // validate the user
                 if (!user || user.status !== "active" || !user.isVerified) {
-                    return res.send(apiError(401, i18n.__("unauthorized")));
+                    return res
+                        .status(401)
+                        .send(apiError(401, i18n.__("unauthorized")));
                 }
 
                 // check if the token exists in the database
@@ -43,7 +47,9 @@ const authenticate = (req, res, next) => {
                     userId: decoded.id,
                 });
                 if (!userToken) {
-                    return res.send(apiError(401, i18n.__("unauthorized")));
+                    return res
+                        .status(401)
+                        .send(apiError(401, i18n.__("unauthorized")));
                 }
 
                 // assign the decoded token to the request
@@ -53,7 +59,7 @@ const authenticate = (req, res, next) => {
             }
         );
     } catch (error) {
-        res.send(apiError(500, i18n.__("returnDeveloper")));
+        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
     }
 };
 

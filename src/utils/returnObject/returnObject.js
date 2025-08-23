@@ -9,7 +9,7 @@ import {
 export const userObj = (user) => {
     console.log("env", process.env.NODE_ENV);
     const avatar =
-        user.avatar == "" || user.avatar == "default.png"
+        !user.avatar || user.avatar === "" || user.avatar === "default.png"
             ? address + usersImage + "default.png"
             : user.avatar.startsWith("http") // handle social login pictures
             ? user.avatar

@@ -45,13 +45,14 @@ export const handleNotification = async (
         await saveNotification(objNotify);
 
         // get model based on type
-        const Model = modelMap(objUsers.userRef);
+        const model = modelMap(objUsers.userRef);
 
         // get the receiver document
-        const user = await Model.findOne(
-            { _id: objUsers.userId },
-            { isNotify: true }
-        );
+        const user = await model.findOne({
+            _id: objUsers.userId,
+            status: "active",
+            isNotify: true,
+        });
 
         if (user) {
             // get receiver devices
@@ -96,7 +97,7 @@ const saveNotification = async (objNotify) => {
         const model = modelMap(objNotify.userRef);
 
         await model.findOneAndUpdate(
-            { _id: notification.userId },
+            { _id: notification.userId, status: "active" },
             updateField,
             { new: true }
         );

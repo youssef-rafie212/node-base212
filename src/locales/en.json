@@ -46,5 +46,13 @@
     "otpSentEmailHtml": "<p>Your OTP for verification is <strong>{{otp}}</strong>.</p>",
     "smsNotSent": "SMS not sent.",
     "idTokenRequired": "ID Token is required.",
-    "dataAlreadyCompleted": "User data is already completed."
+    "dataAlreadyCompleted": "User data is already completed.",
+    "userFetched": "Users fetched successfully.",
+    "idRequired": "ID is required.",
+    "invalidId": "Invalid ID.",
+    "genderRequired": "Gender is required.",
+    "languageRequired": "Language is required.",
+    "invalidLanguage": "Invalid language.",
+    "languageUpdated": "Language updated successfully.",
+    "userDeleted": "User deleted successfully."
 }

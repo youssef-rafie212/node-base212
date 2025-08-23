@@ -1,11 +1,18 @@
 import initId from "../../utils/initIds/initId.js";
 import makeDir from "../../utils/makeDir/makeDir.js";
+import { removeFile } from "../../utils/fileDelete/fileDelete.js";
 import { uploadAnyFile } from "../../utils/fileUpload/fileUpload.js";
 
 // handle user avatar upload
-export const uploadAvatar = async (req, data, id = null) => {
+export const uploadAvatar = async (
+    req,
+    data,
+    isUpdate = false,
+    updateId = null,
+    oldAvatarName = null
+) => {
     // generate a new id if not provided
-    id = id || initId();
+    const id = isUpdate ? updateId : initId();
 
     // check if the file is provided first
     if (req.files?.avatar) {
@@ -23,8 +30,13 @@ export const uploadAvatar = async (req, data, id = null) => {
         );
 
         // assign the image name to the data object
-        data.avatar = image;
-    }
+        data.avatar = image; 
 
+        // remove old avatar if it exists
+        if (isUpdate) {
+            removeFile(oldAvatarName, "users", updateId);
+        }
+    }
+    
     return id;
 };

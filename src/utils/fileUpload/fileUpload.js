@@ -2,7 +2,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 
-import FileSave from "../fileSave/fileSave.js";
+import SaveImage from "../fileSave/fileSave.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -60,7 +60,7 @@ export const handleUploadAnyImage = async (
         );
 
         // create fileSave instance
-        let fileUpload = new FileSave(pathUpload);
+        let fileUpload = new SaveImage(pathUpload);
 
         // initialize image processing results
         let results = [];

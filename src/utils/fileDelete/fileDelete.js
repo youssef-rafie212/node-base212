@@ -9,6 +9,8 @@ const __dirname = dirname(__filename);
 // remove file
 export const removeFile = (name, type, otherLink) => {
     if (
+        name &&
+        name !== "" &&
         name !== "male.png" &&
         name !== "female.png" &&
         name !== "default.png"

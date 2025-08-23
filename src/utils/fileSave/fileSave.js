@@ -2,7 +2,7 @@ import path from "path";
 import sharp from "sharp";
 
 // this class handles file (image) saving operations
-class FileSave {
+class SaveImage {
     constructor(folder) {
         this.folder = folder;
     }
@@ -10,7 +10,7 @@ class FileSave {
     // save file
     async save(buffer, name, type = "png", width = 450, height = 400) {
         // generate unique filename
-        const filename = FileSave.filename(name, type);
+        const filename = SaveImage.filename(name, type);
 
         // generate file path
         const filepath = this.filepath(filename);
@@ -23,7 +23,8 @@ class FileSave {
             .withMetadata({ orientation: 1 })
             .resize(width, height, {
                 kernel: sharp.kernel.lanczos2,
-                fit: sharp.fit.inside,
+                fit: sharp.fit.cover,
+                position: "center",
                 withoutEnlargement: true,
             })
             .rotate()
@@ -50,4 +51,4 @@ class FileSave {
     }
 }
 
-export default FileSave;
+export default SaveImage;

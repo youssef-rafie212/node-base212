@@ -1,4 +1,4 @@
-import { validationResult } from "express-validator";
+import { validationResult, matchedData } from "express-validator";
 
 import apiError from "../../utils/api/apiError.js";
 
@@ -12,6 +12,9 @@ const validateRequest = (req, res, next) => {
         const firstError = errors.array()[0];
         return res.status(400).send(apiError(400, firstError.msg));
     }
+
+    // if no errors, get the validated data
+    req.validatedData = matchedData(req);
 
     next();
 };

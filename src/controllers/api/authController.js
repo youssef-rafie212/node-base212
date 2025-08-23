@@ -1,10 +1,10 @@
 import i18n from "i18n";
+import admin from "firebase-admin";
+
 import apiError from "../../utils/api/apiError.js";
 import apiResponse from "../../utils/api/apiResponse.js";
 import getModel from "../../helpers/modelMap/modelMap.js";
 import duplicate from "../../helpers/auth/duplicate.js";
-import admin from "firebase-admin";
-
 import * as sendVerification from "../../helpers/auth/sendVerification.js";
 import * as devices from "../../helpers/auth/devices.js";
 import * as tokens from "../../helpers/auth/tokens.js";
@@ -24,10 +24,31 @@ export const getCsrfToken = (req, res) => {
     res.send(apiResponse(200, i18n.__("tokenGenerated"), { token }));
 };
 
+// generate a token for a user (for testing)
+export const generateToken = async (req, res) => {
+    try {
+        const data = req.validatedData;
+
+        const model = getModel(data.type);
+
+        const user = await model.findOne({ _id: data.id, status: "active" });
+        if (!user) {
+            return res.status(404).send(apiError(404, i18n.__("userNotFound")));
+        }
+
+        const token = await tokens.newToken(user._id, user.type);
+
+        res.send(apiResponse(200, i18n.__("tokenGenerated"), { token }));
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
+    }
+};
+
 // local sign up for user with full data
 export const signUp = async (req, res) => {
     try {
-        const data = req.body;
+        const data = req.validatedData;
 
         // get model based on type
         const model = getModel(data.type);
@@ -99,7 +120,7 @@ export const signUp = async (req, res) => {
 // request an otp that will be sent on email
 export const requestOtpEmail = async (req, res) => {
     try {
-        const data = req.body;
+        const data = req.validatedData;
 
         // get model based on type
         const model = getModel(data.type);
@@ -135,7 +156,7 @@ export const requestOtpEmail = async (req, res) => {
 // request an otp that will be sent on phone
 export const requestOtpPhone = async (req, res) => {
     try {
-        const data = req.body;
+        const data = req.validatedData;
 
         // get model based on type
         const model = getModel(data.type);
@@ -175,7 +196,7 @@ export const requestOtpPhone = async (req, res) => {
 // local sign in
 export const localSignIn = async (req, res) => {
     try {
-        const data = req.body;
+        const data = req.validatedData;
 
         // get model based on type
         const model = getModel(data.type);
@@ -221,7 +242,7 @@ export const localSignIn = async (req, res) => {
 // social sign in
 export const socialSignIn = async (req, res) => {
     try {
-        const data = req.body;
+        const data = req.validatedData;
 
         // verify firebase ID token
         const decoded = await admin.auth().verifyIdToken(data.idToken);
@@ -236,7 +257,7 @@ export const socialSignIn = async (req, res) => {
         let isNew = false;
 
         // try to find user by Firebase UID
-        let user = await model.findOne({ uId: uid });
+        let user = await model.findOne({ uId: uid, status: "active" });
 
         if (!user) {
             // create new user with limited info (to be completed later)
@@ -275,7 +296,7 @@ export const socialSignIn = async (req, res) => {
 // verify user email by otp
 export const verifyEmail = async (req, res) => {
     try {
-        const data = req.body;
+        const data = req.validatedData;
 
         // get model based on type
         const model = getModel(data.type);
@@ -319,7 +340,7 @@ export const verifyEmail = async (req, res) => {
 // verify user phone by otp
 export const verifyPhone = async (req, res) => {
     try {
-        const data = req.body;
+        const data = req.validatedData;
 
         // get model based on type
         const model = getModel(data.type);
@@ -366,13 +387,17 @@ export const completeData = async (req, res) => {
         // get current signed in user
         const { sub } = req;
 
-        const data = req.body;
+        const data = req.validatedData;
 
         // get model based on type
         const model = getModel(sub.userType);
 
         // get the user document
-        const user = await model.findOne({ _id: sub.id, status: "active" });
+        const user = await model.findOne({
+            _id: sub.id,
+            status: "active",
+            isVerified: true,
+        });
         if (!user) {
             return res.status(400).send(apiError(400, i18n.__("userNotFound")));
         }
@@ -425,7 +450,7 @@ export const signOut = async (req, res) => {
 // reset password using email and otp
 export const resetPasswordEmail = async (req, res) => {
     try {
-        const data = req.body;
+        const data = req.validatedData;
 
         // get model based on type
         const model = getModel(data.type);
@@ -469,7 +494,7 @@ export const resetPasswordEmail = async (req, res) => {
 // reset password using phone and otp
 export const resetPasswordPhone = async (req, res) => {
     try {
-        const data = req.body;
+        const data = req.validatedData;
 
         // get model based on type
         const model = getModel(data.type);
