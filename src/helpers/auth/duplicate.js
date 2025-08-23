@@ -5,14 +5,14 @@ const duplicate = async (model, fieldName, fieldBValue, updateId) => {
     if (updateId) {
         user = await model.findOne({
             [fieldName]: fieldBValue,
-            status: { $ne: "delete" },
+            status: { $ne: "deleted" },
             _id: { $ne: updateId },
         });
         // the action is create
     } else {
         user = await model.findOne({
             [fieldName]: fieldBValue,
-            status: { $ne: "delete" },
+            status: { $ne: "deleted" },
         });
     }
     return user;

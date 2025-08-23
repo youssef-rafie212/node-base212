@@ -11,7 +11,7 @@ const adminSchema = new mongoose.Schema(
         language: { type: String, enum: ["ar", "en"], default: "ar" },
         status: {
             type: String,
-            enum: ["block", "active", "delete"],
+            enum: ["blocked", "active", "deleted"],
             default: "active",
         },
         isAdmin: { type: Boolean, default: false },

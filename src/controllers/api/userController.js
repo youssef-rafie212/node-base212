@@ -157,7 +157,7 @@ export const deleteMe = async (req, res) => {
         }
 
         // soft delete user account
-        user.status = "delete";
+        user.status = "deleted";
         // reset avatar
         user.avatar = "";
         await user.save();

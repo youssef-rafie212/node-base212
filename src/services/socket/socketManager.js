@@ -52,7 +52,10 @@ export const initializeSocket = async (server, app) => {
                 }
 
                 // get user from database (only fetch when connecting)
-                const userData = await User.findById(userId);
+                const userData = await User.findOne({
+                    _id: userId,
+                    status: "active",
+                });
                 if (!userData) {
                     return socket.emit("fail", {
                         key: "initializeUser",

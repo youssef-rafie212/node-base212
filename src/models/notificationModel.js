@@ -29,7 +29,6 @@ let notificationSchema = new mongoose.Schema(
             ],
             default: "admin",
         }, // to know mobile action
-        status: { type: String, enum: ["seen", "unseen"], default: "unseen" },
         data: {},
     },
     {
