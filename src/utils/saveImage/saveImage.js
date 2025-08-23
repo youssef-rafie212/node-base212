@@ -8,7 +8,7 @@ class SaveImage {
     }
 
     // save file
-    async save(buffer, name, type = "png", width = 450, height = 400) {
+    async save(buffer, name, type = "png", width = 500, height = 500) {
         // generate unique filename
         const filename = SaveImage.filename(name, type);
 
@@ -25,7 +25,6 @@ class SaveImage {
                 kernel: sharp.kernel.lanczos2,
                 fit: sharp.fit.cover,
                 position: "center",
-                withoutEnlargement: true,
             })
             .rotate()
             .toFile(filepath);
