@@ -13,7 +13,7 @@ const authenticate = (req, res, next) => {
 
         // check if token exists in the headers
         if (!token) {
-            return res.send(apiError(401, i18n.__("unauthorized")));
+            return res.status(401).send(apiError(401, i18n.__("unauthorized")));
         }
 
         // verify the token

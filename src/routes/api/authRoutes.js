@@ -9,8 +9,8 @@ const router = express.Router();
 
 router.get("/csrf-token", authController.getCsrfToken);
 
-router.post(
-    "/generate-token",
+router.get(
+    "/generate-token/:id",
     authValidation.validateGenerateToken,
     validateRequest,
     authController.generateToken

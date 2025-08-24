@@ -2,7 +2,7 @@ import { body, query, param, check } from "express-validator";
 import i18n from "i18n";
 
 export const validateGenerateToken = [
-    body("id")
+    param("id")
         .trim()
         .notEmpty()
         .withMessage(() => i18n.__("idRequired"))
