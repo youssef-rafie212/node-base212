@@ -54,5 +54,7 @@
     "languageRequired": "اللغة مطلوبة.",
     "invalidLanguage": "اللغة غير صالحة.",
     "languageUpdated": "تم تحديث اللغة بنجاح.",
-    "userDeleted": "تم حذف المستخدم بنجاح."
+    "userDeleted": "تم حذف المستخدم بنجاح.",
+    "chatRoomsFetched": "تم جلب غرف الدردشة بنجاح.",
+    "chatRoomCreated": "تم إنشاء غرفة الدردشة بنجاح."
 }

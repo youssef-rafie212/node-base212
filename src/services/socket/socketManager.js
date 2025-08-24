@@ -7,6 +7,12 @@ import User from "../../models/userModel.js";
 let io;
 export const connectedUsers = new Map(); // store connected users (fallback when Redis is unavailable)
 
+// get socket instance for a user by userId
+export const getUserSocket = (userId) => {
+    const socketId = connectedUsers.get(userId);
+    return socketId ? io.sockets.sockets.get(socketId) : null;
+};
+
 // initialize socket.io
 export const initializeSocket = async (server, app) => {
     io = new Server(server, {

@@ -4,7 +4,11 @@ import {
     usersImage,
     address,
     countryImage,
+    chatImage,
+    chatAudio,
 } from "../sharedVariable/sharedVariable.js";
+
+moment.locale("ar"); // set default language
 
 export const userObj = (user) => {
     console.log("env", process.env.NODE_ENV);
@@ -65,7 +69,7 @@ export const notifyObj = (
         message: objMessage,
         title: objTitle,
         key,
-        data: data || {}, // Store any additional data
+        data: data || {}, // store any additional data
     };
 };
 
@@ -79,23 +83,23 @@ export const sendNotifyObj = (
     lang = "ar",
     data
 ) => {
-    i18n.setLocale(lang); // Set the appropriate language
+    i18n.setLocale(lang); // set the appropriate language
 
-    // Sanitize and convert all `data` values to strings
+    // sanitize and convert all `data` values to strings
     const sanitizedData = {};
     Object.entries(data || {}).forEach(([key, value]) => {
         if (value === null || value === undefined) {
             sanitizedData[key] = "";
         } else if (typeof value === "object") {
-            // For objects, stringify them
+            // for objects, stringify them
             sanitizedData[key] = JSON.stringify(value);
         } else {
-            // For primitives, convert to string
+            // for primitives, convert to string
             sanitizedData[key] = String(value);
         }
     });
 
-    // Attach any additional data to the notification
+    // attach any additional data to the notification
     const attach = {
         name: sanitizedData.name,
     };
@@ -109,21 +113,78 @@ export const sendNotifyObj = (
             : i18n.__(objMessage[lang], attach);
 
     return {
-        // Displayed notification content
+        // displayed notification content
         notification: {
             title,
             body,
         },
 
-        // Token for the recipient device
+        // token for the recipient device
         token: deviceToken,
 
-        // Custom data for internal processing
+        // custom data for internal processing
         data: {
             key,
             sound: "default",
-            badge: String(counter || 1), // Firebase requires strings for badge
-            ...sanitizedData, // Spread the sanitized data directly
+            badge: String(counter || 1), // firebase requires strings for badge
+            ...sanitizedData, // spread the sanitized data directly
         },
+    };
+};
+
+export const chatMessageObj = (message, lang) => {
+    moment.locale(lang); // set the appropriate language
+
+    let content = message.content;
+
+    if (message.messageType === "image") {
+        content = address + chatImage + message.content;
+    } else if (message.messageType === "audio") {
+        content = address + chatAudio + message.content;
+    }
+
+    return {
+        id: message._id,
+        chatRoom: message.chatRoom,
+        sender: userObj(message.sender),
+        content,
+        messageType: message.messageType,
+        replyTo: message.replyTo
+            ? chatMessageWithNoReplyObj(message.replyTo, lang)
+            : null,
+        createdAt: moment(message.createdAt).format("MMM D, h:mm A"),
+        updatedAt: moment(message.updatedAt).format("MMM D, h:mm A"),
+    };
+};
+
+// chat message object without reply to avoid recursion
+export const chatMessageWithNoReplyObj = (message, lang) => {
+    moment.locale(lang); // set the appropriate language
+
+    return {
+        id: message._id,
+        chatRoom: message.chatRoom,
+        sender: userObj(message.sender),
+        content: message.content,
+        messageType: message.messageType,
+        replyTo: null,
+        createdAt: moment(message.createdAt).format("MMM D, h:mm A"),
+        updatedAt: moment(message.updatedAt).format("MMM D, h:mm A"),
+    };
+};
+
+export const chatRoomObj = (room, lang) => {
+    moment.locale(lang); // set the appropriate language
+
+    return {
+        id: room._id,
+        roomType: room.roomType,
+        lastMessage: chatMessageObj(room.lastMessage),
+        lastMessageAt: moment(room.lastMessageAt).format("MMM D, h:mm A"),
+        unreadCount: room.unreadCount || {},
+        status: room.status,
+        participants: room.participants.map((p) => userObj(p)) || [],
+        createdAt: moment(room.createdAt).format("MMM D, h:mm A"),
+        updatedAt: moment(room.updatedAt).format("MMM D, h:mm A"),
     };
 };

@@ -13,6 +13,8 @@ export const settingImage = "/assets/uploads/logo/";
 export const socialImage = "/assets/uploads/socialMedia/";
 export const countryImage = "/assets/uploads/country/";
 export const paymentImage = "/assets/uploads/payment/";
+export const chatImage = "/assets/uploads/chat/images/";
+export const chatAudio = "/assets/uploads/chat/audios/";
 export const allPermissions = [
     {
         id: "1",
