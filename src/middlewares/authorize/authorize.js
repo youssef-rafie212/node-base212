@@ -6,7 +6,7 @@ const authorize = async (req, res, next) => {
     try {
         // find admin by id
         const admin = await Admin.findById(req.sub.id).populate("role");
-        if (!admin) {
+        if (!admin || admin.status !== "active") {
             return res.status(403).send(apiError(403, i18n.__("forbidden")));
         }
 

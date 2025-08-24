@@ -2,13 +2,6 @@ import { body, query, param, check } from "express-validator";
 import i18n from "i18n";
 
 export const validateGenerateToken = [
-    body("type")
-        .trim()
-        .notEmpty()
-        .withMessage(() => i18n.__("typeRequired"))
-        .isIn(["User"])
-        .withMessage(() => i18n.__("invalidType")),
-
     body("id")
         .trim()
         .notEmpty()
@@ -22,7 +15,7 @@ export const validateSignUp = [
         .trim()
         .notEmpty()
         .withMessage(() => i18n.__("typeRequired"))
-        .isIn(["User"])
+        .isIn(["user"])
         .withMessage(() => i18n.__("invalidType")),
 
     body("email")
@@ -102,13 +95,6 @@ export const validateSignUp = [
 ];
 
 export const validateRequestOtpEmail = [
-    body("type")
-        .trim()
-        .notEmpty()
-        .withMessage(() => i18n.__("typeRequired"))
-        .isIn(["User"])
-        .withMessage(() => i18n.__("invalidType")),
-
     body("email")
         .trim()
         .notEmpty()
@@ -118,13 +104,6 @@ export const validateRequestOtpEmail = [
 ];
 
 export const validateRequestOtpPhone = [
-    body("type")
-        .trim()
-        .notEmpty()
-        .withMessage(() => i18n.__("typeRequired"))
-        .isIn(["User"])
-        .withMessage(() => i18n.__("invalidType")),
-
     body("phone")
         .trim()
         .notEmpty()
@@ -138,7 +117,7 @@ export const validateLocalSignIn = [
         .trim()
         .notEmpty()
         .withMessage(() => i18n.__("typeRequired"))
-        .isIn(["User"])
+        .isIn(["user"])
         .withMessage(() => i18n.__("invalidType")),
 
     body("email")
@@ -169,13 +148,6 @@ export const validateLocalSignIn = [
 ];
 
 export const validateVerifyEmail = [
-    body("type")
-        .trim()
-        .notEmpty()
-        .withMessage(() => i18n.__("typeRequired"))
-        .isIn(["User"])
-        .withMessage(() => i18n.__("invalidType")),
-
     body("email")
         .trim()
         .notEmpty()
@@ -192,18 +164,11 @@ export const validateVerifyEmail = [
 ];
 
 export const validateVerifyPhone = [
-    body("type")
-        .trim()
-        .notEmpty()
-        .withMessage(() => i18n.__("typeRequired"))
-        .isIn(["User"])
-        .withMessage(() => i18n.__("invalidType")),
-
     body("phone")
         .trim()
         .notEmpty()
         .withMessage(() => i18n.__("phoneRequired"))
-        .isMobilePhone()
+        .isMobilePhone("any")
         .withMessage(() => i18n.__("invalidPhone")),
 
     body("otp")
@@ -215,25 +180,10 @@ export const validateVerifyPhone = [
 ];
 
 export const validateCompleteData = [
-    // just a test field
-    body("type")
-        .trim()
-        .notEmpty()
-        .withMessage(() => i18n.__("typeRequired"))
-        .isLength({ min: 2, max: 100 })
-        .withMessage(() => i18n.__("invalidType")),
-
     // other fields ...
 ];
 
 export const validateResetPasswordEmail = [
-    body("type")
-        .trim()
-        .notEmpty()
-        .withMessage(() => i18n.__("typeRequired"))
-        .isIn(["User"])
-        .withMessage(() => i18n.__("invalidType")),
-
     body("email")
         .trim()
         .notEmpty()
@@ -267,13 +217,6 @@ export const validateResetPasswordEmail = [
 ];
 
 export const validateResetPasswordPhone = [
-    body("type")
-        .trim()
-        .notEmpty()
-        .withMessage(() => i18n.__("typeRequired"))
-        .isIn(["User"])
-        .withMessage(() => i18n.__("invalidType")),
-
     body("phone")
         .trim()
         .notEmpty()
@@ -311,7 +254,7 @@ export const validateSocialSignIn = [
         .trim()
         .notEmpty()
         .withMessage(() => i18n.__("typeRequired"))
-        .isIn(["User"])
+        .isIn(["user"])
         .withMessage(() => i18n.__("invalidType")),
 
     body("idToken")

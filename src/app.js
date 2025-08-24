@@ -15,7 +15,6 @@ import apiError from "./utils/api/apiError.js";
 import globalErrorHandler from "./utils/error/globalErrorHandler.js";
 import authRouter from "./routes/api/authRoutes.js";
 import userRouter from "./routes/api/userRoutes.js";
-import morgan from "morgan";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -63,9 +62,6 @@ app.use(
         credentials: true,
     })
 );
-
-// logging middleware
-app.use(morgan("dev"));
 
 // xss protection
 app.use(xss());

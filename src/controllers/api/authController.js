@@ -4,6 +4,7 @@ import admin from "firebase-admin";
 import apiError from "../../utils/api/apiError.js";
 import apiResponse from "../../utils/api/apiResponse.js";
 import getModel from "../../helpers/modelMap/modelMap.js";
+import User from "../../models/userModel.js";
 import duplicate from "../../helpers/auth/duplicate.js";
 import * as sendVerification from "../../helpers/auth/sendVerification.js";
 import * as devices from "../../helpers/auth/devices.js";
@@ -29,9 +30,7 @@ export const generateToken = async (req, res) => {
     try {
         const data = req.validatedData;
 
-        const model = getModel(data.type);
-
-        const user = await model.findOne({ _id: data.id, status: "active" });
+        const user = await User.findOne({ _id: data.id, status: "active" });
         if (!user) {
             return res.status(404).send(apiError(404, i18n.__("userNotFound")));
         }
@@ -55,7 +54,7 @@ export const signUp = async (req, res) => {
 
         // check for duplicate email if it exists in body
         if (data.email) {
-            const isDuplicate = await duplicate(model, "email", data.email);
+            const isDuplicate = await duplicate("email", data.email);
             if (isDuplicate) {
                 return res
                     .status(400)
@@ -65,11 +64,7 @@ export const signUp = async (req, res) => {
 
         // check for duplicate phone if it exists in body
         if (data.phone) {
-            const isPhoneDuplicate = await duplicate(
-                model,
-                "phone",
-                data.phone
-            );
+            const isPhoneDuplicate = await duplicate("phone", data.phone);
             if (isPhoneDuplicate) {
                 return res
                     .status(400)
@@ -122,11 +117,8 @@ export const requestOtpEmail = async (req, res) => {
     try {
         const data = req.validatedData;
 
-        // get model based on type
-        const model = getModel(data.type);
-
         // find user by email
-        const user = await model.findOne({
+        const user = await User.findOne({
             email: data.email,
             status: "active",
         });
@@ -158,11 +150,8 @@ export const requestOtpPhone = async (req, res) => {
     try {
         const data = req.validatedData;
 
-        // get model based on type
-        const model = getModel(data.type);
-
         // find user by phone
-        const user = await model.findOne({
+        const user = await User.findOne({
             phone: data.phone,
             status: "active",
         });
@@ -298,11 +287,8 @@ export const verifyEmail = async (req, res) => {
     try {
         const data = req.validatedData;
 
-        // get model based on type
-        const model = getModel(data.type);
-
         // find user by email and activation code
-        const user = await model.findOne({
+        const user = await User.findOne({
             email: data.email,
             status: "active",
         });
@@ -342,11 +328,8 @@ export const verifyPhone = async (req, res) => {
     try {
         const data = req.validatedData;
 
-        // get model based on type
-        const model = getModel(data.type);
-
         // find user by phone and activation code
-        const user = await model.findOne({
+        const user = await User.findOne({
             phone: data.phone,
             status: "active",
         });
@@ -389,11 +372,8 @@ export const completeData = async (req, res) => {
 
         const data = req.validatedData;
 
-        // get model based on type
-        const model = getModel(sub.userType);
-
         // get the user document
-        const user = await model.findOne({
+        const user = await User.findOne({
             _id: sub.id,
             status: "active",
             isVerified: true,
@@ -452,11 +432,8 @@ export const resetPasswordEmail = async (req, res) => {
     try {
         const data = req.validatedData;
 
-        // get model based on type
-        const model = getModel(data.type);
-
         // find user by email
-        const user = await model.findOne({
+        const user = await User.findOne({
             email: data.email,
             status: "active",
             isVerified: true,
@@ -496,11 +473,8 @@ export const resetPasswordPhone = async (req, res) => {
     try {
         const data = req.validatedData;
 
-        // get model based on type
-        const model = getModel(data.type);
-
         // find user by phone
-        const user = await model.findOne({
+        const user = await User.findOne({
             phone: data.phone,
             status: "active",
             isVerified: true,

@@ -1,11 +1,11 @@
 import admin from "firebase-admin";
 
-import * as returnObject from "../../helpers/returnObject/returnObject.js";
-import modelMap from "../../helpers/modelMap/modelMap.js";
+import * as returnObject from "../../utils/returnObject/returnObject.js";
+import User from "../../models/userModel.js";
 import {
     settingImage,
     address,
-} from "../../helpers/sharedVariable/sharedVariable.js";
+} from "../../utils/sharedVariable/sharedVariable.js";
 import Setting from "../../models/settingsModel.js";
 import Device from "../../models/deviceModel.js";
 import Notification from "../../models/notificationModel.js";
@@ -44,11 +44,8 @@ export const handleNotification = async (
         // save notification to database
         await saveNotification(objNotify);
 
-        // get model based on type
-        const model = modelMap(objUsers.userRef);
-
         // get the receiver document
-        const user = await model.findOne({
+        const user = await User.findOne({
             _id: objUsers.userId,
             status: "active",
             isNotify: true,
@@ -94,9 +91,8 @@ const saveNotification = async (objNotify) => {
 
         // update receiver notification count
         const updateField = { $inc: { notifyCount: 1 } };
-        const model = modelMap(objNotify.userRef);
 
-        await model.findOneAndUpdate(
+        await User.findOneAndUpdate(
             { _id: notification.userId, status: "active" },
             updateField,
             { new: true }

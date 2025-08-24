@@ -1,16 +1,18 @@
+import User from "../../models/userModel.js";
+
 // checks if a field value is duplicated in the database
-const duplicate = async (model, fieldName, fieldValue, updateId) => {
+const duplicate = async (fieldName, fieldValue, updateId) => {
     let user = null;
     // if the action is update then we exclude the current document from the check
     if (updateId) {
-        user = await model.findOne({
+        user = await User.findOne({
             [fieldName]: fieldValue,
             status: { $ne: "deleted" },
             _id: { $ne: updateId },
         });
         // the action is create
     } else {
-        user = await model.findOne({
+        user = await User.findOne({
             [fieldName]: fieldValue,
             status: { $ne: "deleted" },
         });

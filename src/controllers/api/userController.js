@@ -3,7 +3,7 @@ import i18n from "i18n";
 import { userObj } from "../../utils/returnObject/returnObject.js";
 import apiError from "../../utils/api/apiError.js";
 import apiResponse from "../../utils/api/apiResponse.js";
-import getModel from "../../helpers/modelMap/modelMap.js";
+import User from "../../models/userModel.js";
 import duplicate from "../../helpers/auth/duplicate.js";
 import { validateCountryExists } from "../../helpers/country/validateCountry.js";
 import * as userAvatars from "../../helpers/user/avatars.js";
@@ -14,11 +14,8 @@ import { removeFile } from "../../utils/fileDelete/fileDelete.js";
 // gets current user information
 export const me = async (req, res) => {
     try {
-        // get model based on user type
-        const model = getModel(req.sub.userType);
-
         // find the user
-        const user = await model.findOne({ _id: req.sub.id, status: "active" });
+        const user = await User.findOne({ _id: req.sub.id, status: "active" });
         if (!user) {
             return res.status(400).send(apiError(400, i18n.__("userNotFound")));
         }
@@ -38,11 +35,8 @@ export const updateMe = async (req, res) => {
     try {
         const data = req.validatedData;
 
-        // get model based on user type
-        const model = getModel(req.sub.userType);
-
         // find the user by id
-        const user = await model.findOne({ _id: req.sub.id, status: "active" });
+        const user = await User.findOne({ _id: req.sub.id, status: "active" });
         if (!user) {
             return res.status(400).send(apiError(400, i18n.__("userNotFound")));
         }
@@ -50,7 +44,6 @@ export const updateMe = async (req, res) => {
         // check for duplicate email if it exists in body
         if (data.email && user.email !== data.email) {
             const isDuplicate = await duplicate(
-                model,
                 "email",
                 data.email,
                 req.sub.id
@@ -68,7 +61,6 @@ export const updateMe = async (req, res) => {
         // check for duplicate phone if it exists in body
         if (data.phone && user.phone !== data.phone) {
             const isPhoneDuplicate = await duplicate(
-                model,
                 "phone",
                 data.phone,
                 req.sub.id
@@ -121,11 +113,8 @@ export const updateLanguage = async (req, res) => {
     try {
         const data = req.validatedData;
 
-        // get model based on user type
-        const model = getModel(req.sub.userType);
-
         // find the user by id
-        const user = await model.findOne({ _id: req.sub.id, status: "active" });
+        const user = await User.findOne({ _id: req.sub.id, status: "active" });
         if (!user) {
             return res.status(400).send(apiError(400, i18n.__("userNotFound")));
         }
@@ -147,11 +136,8 @@ export const updateLanguage = async (req, res) => {
 // delete current user account
 export const deleteMe = async (req, res) => {
     try {
-        // get model based on user type
-        const model = getModel(req.sub.userType);
-
-        // find the user by id
-        const user = await model.findOne({ _id: req.sub.id, status: "active" });
+        // find the user
+        const user = await User.findOne({ _id: req.sub.id, status: "active" });
         if (!user) {
             return res.status(400).send(apiError(400, i18n.__("userNotFound")));
         }

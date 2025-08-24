@@ -13,7 +13,7 @@ const afterAuth = async (
 
     // add the user device to stored devices
     if (fcmToken) {
-        await devices.addUserDevice(userId, fcmToken, userType, deviceType);
+        await devices.addUserDevice(userId, fcmToken, deviceType);
     }
 
     return token;

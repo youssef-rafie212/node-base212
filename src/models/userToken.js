@@ -4,12 +4,7 @@ const userTokenSchema = new mongoose.Schema(
     {
         userId: {
             type: mongoose.Schema.Types.ObjectId,
-            refPath: "userRef",
-            required: true,
-        },
-        userRef: {
-            type: String,
-            enum: ["User", "Admin"],
+            ref: "User",
             required: true,
         },
         token: {

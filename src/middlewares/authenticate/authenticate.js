@@ -3,7 +3,7 @@ import i18n from "i18n";
 
 import UserToken from "../../models/userToken.js";
 import apiError from "../../utils/api/apiError.js";
-import getModel from "../../helpers/modelMap/modelMap.js";
+import User from "../../models/userModel.js";
 
 // middleware that protects routes and authenticates the user
 const authenticate = (req, res, next) => {
@@ -27,12 +27,8 @@ const authenticate = (req, res, next) => {
                         .send(apiError(401, i18n.__("unauthorized")));
                 }
 
-                // get model based on user type
-                const { userType } = decoded;
-                const model = getModel(userType);
-
                 // find user by id
-                const user = await model.findById(decoded.id);
+                const user = await User.findById(decoded.id);
 
                 // validate the user
                 if (!user || user.status !== "active" || !user.isVerified) {

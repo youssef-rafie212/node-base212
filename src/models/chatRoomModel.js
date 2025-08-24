@@ -5,20 +5,15 @@ const chatRoomSchema = new mongoose.Schema(
         // for group rooms only
         admin: {
             type: mongoose.Schema.Types.ObjectId,
-            refPath: "userRef",
+            ref: "User",
         },
         participants: [
             {
                 type: mongoose.Schema.Types.ObjectId,
-                refPath: "userRef",
+                ref: "User",
                 required: true,
             },
         ],
-        userRef: {
-            type: String,
-            required: true,
-            enum: ["User"],
-        },
         roomType: {
             type: String,
             enum: ["direct", "group"],

@@ -7,7 +7,7 @@ export const newToken = async (userId, userType) => {
     const token = generateJwt(userId, userType);
 
     // store the token
-    await UserToken.create({ userId, token, userRef: userType });
+    await UserToken.create({ userId, token });
 
     return token;
 };

@@ -20,9 +20,8 @@ const userSchema = new mongoose.Schema(
         uId: { type: String }, // unique id for user from firebase
         type: {
             type: String,
-            require: true,
-            default: "User",
-            enum: ["User"],
+            default: "user",
+            enum: ["user"],
         },
         status: {
             type: String,
@@ -37,7 +36,7 @@ const userSchema = new mongoose.Schema(
         isVerified: { type: Boolean, default: false },
         dataCompleted: { type: Boolean, default: false },
     },
-    { timestamps: true }
+    { discriminatorKey: "type", timestamps: true }
 );
 
 // pre save hook to hash the password before saving

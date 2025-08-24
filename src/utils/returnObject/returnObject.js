@@ -11,7 +11,6 @@ import {
 moment.locale("ar"); // set default language
 
 export const userObj = (user) => {
-    console.log("env", process.env.NODE_ENV);
     const avatar =
         !user.avatar || user.avatar === "" || user.avatar === "default.png"
             ? address + usersImage + "default.png"
@@ -63,8 +62,6 @@ export const notifyObj = (
     return {
         userId: objUser.userId,
         notifyId: objUser.notifyId,
-        userRef: objUser.userRef,
-        notifyRef: objUser.notifyRef,
         adminId: objUser.adminId,
         message: objMessage,
         title: objTitle,

@@ -61,6 +61,7 @@ export const initializeSocket = async (server, app) => {
                 const userData = await User.findOne({
                     _id: userId,
                     status: "active",
+                    isVerified: true,
                 });
                 if (!userData) {
                     return socket.emit("fail", {
