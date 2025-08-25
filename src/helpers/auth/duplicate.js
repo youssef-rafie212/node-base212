@@ -1,4 +1,4 @@
-import User from "../../models/userModel.js";
+import { User } from "../../models/index.js";
 
 // checks if a field value is duplicated in the database
 const duplicate = async (fieldName, fieldValue, updateId) => {

@@ -1,7 +1,4 @@
-import initId from "../../utils/initIds/initId.js";
-import makeDir from "../../utils/makeDir/makeDir.js";
-import { removeFile } from "../../utils/fileDelete/fileDelete.js";
-import { uploadAnyFile } from "../../utils/fileUpload/fileUpload.js";
+import { initId, makeDir, fileDelete, fileUpload } from "../../utils/index.js";
 
 // handle user avatar upload
 export const uploadAvatar = async (
@@ -20,7 +17,7 @@ export const uploadAvatar = async (
         const dir = makeDir(`users/${id}`);
 
         // upload the image
-        const image = await uploadAnyFile(
+        const image = await fileUpload.uploadAnyFile(
             req,
             "image",
             dir,
@@ -30,13 +27,13 @@ export const uploadAvatar = async (
         );
 
         // assign the image name to the data object
-        data.avatar = image; 
+        data.avatar = image;
 
         // remove old avatar if it exists
         if (isUpdate) {
-            removeFile(oldAvatarName, "users", updateId);
+            fileDelete.removeFile(oldAvatarName, "users", updateId);
         }
     }
-    
+
     return id;
 };

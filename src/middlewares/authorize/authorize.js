@@ -1,5 +1,7 @@
-import apiError from "../../utils/api/apiError.js";
-import Admin from "../../models/adminModel.js";
+import i18n from "i18n";
+
+import { Admin } from "../../models/index.js";
+import { apiError } from "../../utils/index.js";
 
 // middleware for admin routes to make sure the current admin have the right permissions
 const authorize = async (req, res, next) => {

@@ -1,10 +1,7 @@
 import i18n from "i18n";
 
-import apiError from "../../utils/api/apiError.js";
-import apiResponse from "../../utils/api/apiResponse.js";
-import ChatRoom from "../../models/chatRoomModel.js";
-import { chatRoomObj } from "../../utils/returnObject/returnObject.js";
-import User from "../../models/userModel.js";
+import { apiError, apiResponse, returnObject } from "../../utils/index.js";
+import { ChatRoom, User } from "../../models/index.js";
 
 // create chat room
 export const createChatRoom = async (req, res) => {
@@ -36,7 +33,7 @@ export const createChatRoom = async (req, res) => {
             apiResponse(
                 200,
                 i18n.__("chatRoomCreated"),
-                chatRoomObj(chatRoom, req.lang)
+                returnObject.chatRoomObj(chatRoom, req.lang)
             )
         );
     } catch (error) {
@@ -69,7 +66,7 @@ export const getChatRooms = async (req, res) => {
 
         // format chat room objects
         const chatRoomObjects = chatRooms.map((room) =>
-            chatRoomObj(room, req.lang)
+            returnObject.chatRoomObj(room, req.lang)
         );
 
         // calculate total pages

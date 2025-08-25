@@ -1,5 +1,4 @@
-import * as devices from "./devices.js";
-import * as tokens from "./tokens.js";
+import { tokens, devices } from "../index.js";
 
 // handle post authentication actions
 const afterAuth = async (

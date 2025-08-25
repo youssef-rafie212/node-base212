@@ -1,6 +1,6 @@
 import { validationResult, matchedData } from "express-validator";
 
-import apiError from "../../utils/api/apiError.js";
+import { apiError } from "../../utils/index.js";
 
 // middleware that checks for validation errors
 const validateRequest = (req, res, next) => {

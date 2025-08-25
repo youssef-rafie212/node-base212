@@ -1,4 +1,6 @@
-import apiError from "../api/apiError.js";
+import i18n from "i18n";
+
+import { apiError } from "../index.js";
 
 // global error handler middleware
 const globalErrorHandler = (err, req, res, next) => {
@@ -12,6 +14,6 @@ const globalErrorHandler = (err, req, res, next) => {
     res.status(err.status || 500).send(
         apiError(err.status || 500, err.message || "Internal Server Error")
     );
-}
+};
 
 export default globalErrorHandler;

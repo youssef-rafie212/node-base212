@@ -1,15 +1,19 @@
 import i18n from "i18n";
 
-import { userObj } from "../../utils/returnObject/returnObject.js";
-import apiError from "../../utils/api/apiError.js";
-import apiResponse from "../../utils/api/apiResponse.js";
-import User from "../../models/userModel.js";
-import duplicate from "../../helpers/auth/duplicate.js";
-import { validateCountryExists } from "../../helpers/country/validateCountry.js";
-import * as userAvatars from "../../helpers/user/avatars.js";
-import * as tokens from "../../helpers/auth/tokens.js";
-import * as devices from "../../helpers/auth/devices.js";
-import { removeFile } from "../../utils/fileDelete/fileDelete.js";
+import {
+    returnObject,
+    apiError,
+    apiResponse,
+    fileDelete,
+} from "../../utils/index.js";
+import { User } from "../../models/index.js";
+import {
+    duplicate,
+    validateCountryExists,
+    userAvatars,
+    tokens,
+    devices,
+} from "../../helpers/index.js";
 
 // gets current user information
 export const me = async (req, res) => {
@@ -21,7 +25,7 @@ export const me = async (req, res) => {
         }
 
         // get a clean data
-        const resData = userObj(user);
+        const resData = returnObject.userObj(user);
 
         res.send(apiResponse(200, i18n.__("userFetched"), resData));
     } catch (error) {
@@ -99,7 +103,7 @@ export const updateMe = async (req, res) => {
         await user.save();
 
         // get a clean data
-        const resData = userObj(user);
+        const resData = returnObject.userObj(user);
 
         res.send(apiResponse(200, i18n.__("userUpdated"), resData));
     } catch (error) {
@@ -124,7 +128,7 @@ export const updateLanguage = async (req, res) => {
         await user.save();
 
         // get a clean data
-        const resData = userObj(user);
+        const resData = returnObject.userObj(user);
 
         res.send(apiResponse(200, i18n.__("languageUpdated"), resData));
     } catch (error) {
@@ -158,7 +162,7 @@ export const deleteMe = async (req, res) => {
         await devices.deleteAllUserDevices(user.id);
 
         // delete user avatar
-        removeFile(user.avatar, "users", user.id);
+        fileDelete.removeFile(user.avatar, "users", user.id);
 
         res.send(apiResponse(200, i18n.__("userDeleted")));
     } catch (error) {

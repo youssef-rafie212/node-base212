@@ -1,22 +1,21 @@
 import i18n from "i18n";
 import moment from "moment";
-import {
-    usersImage,
-    address,
-    countryImage,
-    chatImage,
-    chatAudio,
-} from "../sharedVariable/sharedVariable.js";
+
+import { sharedVariable } from "../index.js";
 
 moment.locale("ar"); // set default language
 
 export const userObj = (user) => {
     const avatar =
         !user.avatar || user.avatar === "" || user.avatar === "default.png"
-            ? address + usersImage + "default.png"
+            ? sharedVariable.address + sharedVariable.usersImage + "default.png"
             : user.avatar.startsWith("http") // handle social login pictures
             ? user.avatar
-            : address + usersImage + user.id + "/" + user.avatar;
+            : sharedVariable.address +
+              sharedVariable.usersImage +
+              user.id +
+              "/" +
+              user.avatar;
 
     return {
         id: user._id,
@@ -42,7 +41,8 @@ export const userWithTokenObj = (user, token) => {
 };
 
 export const countryObj = (country) => {
-    const image = address + countryImage + country.image;
+    const image =
+        sharedVariable.address + sharedVariable.countryImage + country.image;
     return {
         id: country._id,
         name: country.name,
@@ -84,15 +84,15 @@ export const sendNotifyObj = (
 
     // sanitize and convert all `data` values to strings
     const sanitizedData = {};
-    Object.entries(data || {}).forEach(([key, value]) => {
-        if (value === null || value === undefined) {
-            sanitizedData[key] = "";
-        } else if (typeof value === "object") {
+    Object.entries(data || {}).forEach(([k, v]) => {
+        if (v === null || v === undefined) {
+            sanitizedData[k] = "";
+        } else if (typeof v === "object") {
             // for objects, stringify them
-            sanitizedData[key] = JSON.stringify(value);
+            sanitizedData[k] = JSON.stringify(v);
         } else {
             // for primitives, convert to string
-            sanitizedData[key] = String(value);
+            sanitizedData[k] = String(v);
         }
     });
 
@@ -135,9 +135,11 @@ export const chatMessageObj = (message, lang) => {
     let content = message.content;
 
     if (message.messageType === "image") {
-        content = address + chatImage + message.content;
+        content =
+            sharedVariable.address + sharedVariable.chatImage + message.content;
     } else if (message.messageType === "audio") {
-        content = address + chatAudio + message.content;
+        content =
+            sharedVariable.address + sharedVariable.chatAudio + message.content;
     }
 
     return {
@@ -176,8 +178,12 @@ export const chatRoomObj = (room, lang) => {
     return {
         id: room._id,
         roomType: room.roomType,
-        lastMessage: room.lastMessage ? chatMessageObj(room.lastMessage, lang) : null,
-        lastMessageAt: room.lastMessageAt ? moment(room.lastMessageAt).format("MMM D, h:mm A") : null,
+        lastMessage: room.lastMessage
+            ? chatMessageObj(room.lastMessage, lang)
+            : null,
+        lastMessageAt: room.lastMessageAt
+            ? moment(room.lastMessageAt).format("MMM D, h:mm A")
+            : null,
         unreadCount: room.unreadCount || {},
         status: room.status,
         participants: room.participants.map((p) => userObj(p)) || [],

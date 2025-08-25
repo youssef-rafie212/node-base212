@@ -2,7 +2,7 @@ import { Server } from "socket.io";
 import mongoose from "mongoose";
 import i18n from "i18n";
 
-import User from "../../models/userModel.js";
+import { User } from "../../models/index.js";
 
 let io;
 export const connectedUsers = new Map(); // store connected users (fallback when Redis is unavailable)

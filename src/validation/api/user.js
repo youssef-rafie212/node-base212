@@ -1,5 +1,5 @@
-import { body, query, param, check } from "express-validator";
 import i18n from "i18n";
+import { body, query, param, check } from "express-validator";
 
 export const validateUpdateMe = [
     body("email")

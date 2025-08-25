@@ -1,8 +1,7 @@
 import i18n from "i18n";
 
-import * as codeGeneration from "../../utils/generateCode/generateCode.js";
-import sendEmail from "../../services/nodemailer/sendEmail.js";
-import sendSMS from "../../services/sendSMS/sendSMS.js";
+import { generateCode } from "../../utils/index.js";
+import { sendEmail, sendSMS } from "../../services/index.js";
 
 // sends OTP verification by email
 export const sendVerificationByEmail = async (
@@ -12,7 +11,7 @@ export const sendVerificationByEmail = async (
     htmlKey
 ) => {
     // generate a new OTP
-    const otp = codeGeneration.generateOtp();
+    const otp = generateCode.generateOtp();
 
     // set the data to be sent in the email
     const emailData = {
@@ -31,7 +30,7 @@ export const sendVerificationByEmail = async (
 // sends OTP verification by SMS
 export const sendVerificationBySMS = async (phoneNumber, messageKey) => {
     // generate a new OTP
-    const otp = codeGeneration.generateOtp();
+    const otp = generateCode.generateOtp();
 
     // send the SMS
     const smsResponse = await sendSMS(

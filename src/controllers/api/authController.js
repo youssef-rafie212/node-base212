@@ -1,23 +1,24 @@
 import i18n from "i18n";
 import admin from "firebase-admin";
 
-import apiError from "../../utils/api/apiError.js";
-import apiResponse from "../../utils/api/apiResponse.js";
-import getModel from "../../helpers/modelMap/modelMap.js";
-import User from "../../models/userModel.js";
-import duplicate from "../../helpers/auth/duplicate.js";
-import * as sendVerification from "../../helpers/auth/sendVerification.js";
-import * as devices from "../../helpers/auth/devices.js";
-import * as tokens from "../../helpers/auth/tokens.js";
-import * as userAvatars from "../../helpers/user/avatars.js";
-import * as otps from "../../helpers/auth/otps.js";
-import afterAuth from "../../helpers/auth/afterAuth.js";
-import { generateCsrfToken } from "../../utils/csrf/csrfConfig.js";
-import { validateCountryExists } from "../../helpers/country/validateCountry.js";
 import {
-    userObj,
-    userWithTokenObj,
-} from "../../utils/returnObject/returnObject.js";
+    apiError,
+    apiResponse,
+    generateCsrfToken,
+    returnObject,
+} from "../../utils/index.js";
+import {
+    getModel,
+    duplicate,
+    sendVerification,
+    devices,
+    tokens,
+    userAvatars,
+    otps,
+    afterAuth,
+    validateCountryExists,
+} from "../../helpers/index.js";
+import { User } from "../../models/index.js";
 
 // generate a csrf token for the current request
 export const getCsrfToken = (req, res) => {
@@ -103,7 +104,7 @@ export const signUp = async (req, res) => {
         await user.populate("country");
 
         // get a clean formated object to return in the response
-        const resData = userWithTokenObj(user, token);
+        const resData = returnObject.userWithTokenObj(user, token);
 
         res.send(apiResponse(200, i18n.__("successfulSignup"), resData));
     } catch (error) {
@@ -219,7 +220,7 @@ export const localSignIn = async (req, res) => {
         );
 
         // get a clean formated object to return in the response
-        const resData = userWithTokenObj(user, token);
+        const resData = returnObject.userWithTokenObj(user, token);
 
         res.send(apiResponse(200, i18n.__("successfulLogin"), resData));
     } catch (error) {
@@ -273,7 +274,7 @@ export const socialSignIn = async (req, res) => {
         if (isNew) await user.populate("country");
 
         // get a clean formated object to return in the response
-        const resData = userWithTokenObj(user, token);
+        const resData = returnObject.userWithTokenObj(user, token);
 
         res.send(apiResponse(200, i18n.__("successfulLogin"), resData));
     } catch (error) {
@@ -400,7 +401,7 @@ export const completeData = async (req, res) => {
         await user.save();
 
         // get a clean formated object to return in the response
-        const resData = userObj(user);
+        const resData = returnObject.userObj(user);
 
         res.send(apiResponse(200, i18n.__("userUpdated"), resData));
     } catch (error) {

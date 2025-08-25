@@ -1,4 +1,4 @@
-import Country from "../../models/countryModel.js";
+import { Country } from "../../models/index.js";
 
 // check if country exists
 export const validateCountryExists = async (countryId) => {

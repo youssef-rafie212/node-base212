@@ -1,9 +1,8 @@
 import express from "express";
 
-import authenticate from "../../middlewares/authenticate/authenticate.js";
-import * as chatRoomController from "../../controllers/api/chatRoomController.js";
-import * as chatRoomValidation from "../../validation/api/chatRoom.js";
-import validateRequest from "../../middlewares/validateRequest/validateRequest.js";
+import { chatRoomController } from "../../controllers/api/index.js";
+import { chatRoomValidation } from "../../validation/api/index.js";
+import { authenticate, validateRequest } from "../../middlewares/index.js";
 
 const router = express.Router();
 

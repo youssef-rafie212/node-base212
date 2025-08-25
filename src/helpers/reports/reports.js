@@ -1,4 +1,4 @@
-import Report from "../../models/adminReportModel.js";
+import { Report } from "../../models/index.js";
 
 // store a new report for admin actions
 const createReport = async (adminId, message, typeMethod, url) => {

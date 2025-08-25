@@ -1,5 +1,5 @@
-import generateJwt from "../../utils/token/generateJwt.js";
-import UserToken from "../../models/userToken.js";
+import { generateJwt } from "../../utils/index.js";
+import { UserToken } from "../../models/index.js";
 
 // generate and store new jwt token
 export const newToken = async (userId, userType) => {

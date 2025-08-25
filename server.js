@@ -4,9 +4,11 @@ import http from "http";
 import https from "https";
 import fs from "fs";
 
-import { initializeSocket } from "./src/services/socket/socketManager.js";
-import { initializeRedis } from "./src/services/redis/redisManager.js";
-import { initializeFirebase } from "./src/services/firebase/firebaseManager.js";
+import {
+    initializeRedis,
+    initializeFirebase,
+    socketManager,
+} from "./src/services/index.js";
 
 dotenv.config();
 
@@ -47,7 +49,7 @@ server.listen(process.env.PORT || 3000, () => {
 export const redisClient = await initializeRedis();
 
 // initialize socket handling
-export const socketServer = await initializeSocket(server, app);
+export const socketServer = await socketManager.initializeSocket(server, app);
 
 // initialize firebase
 initializeFirebase();

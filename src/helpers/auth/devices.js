@@ -1,4 +1,4 @@
-import Device from "../../models/deviceModel.js";
+import { Device } from "../../models/index.js";
 
 // stores new user devices
 export const addUserDevice = async (

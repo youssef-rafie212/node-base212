@@ -1,9 +1,8 @@
 import jwt from "jsonwebtoken";
 import i18n from "i18n";
 
-import UserToken from "../../models/userToken.js";
-import apiError from "../../utils/api/apiError.js";
-import User from "../../models/userModel.js";
+import { User, UserToken } from "../../models/index.js";
+import { apiError } from "../../utils/index.js";
 
 // middleware that protects routes and authenticates the user
 const authenticate = (req, res, next) => {

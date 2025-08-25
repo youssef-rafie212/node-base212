@@ -1,5 +1,4 @@
-import User from "../../models/userModel.js";
-import Admin from "../../models/adminModel.js";
+import { User, Admin } from "../../models/index.js";
 
 // map user types to models
 const getModel = (userType) => {

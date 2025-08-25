@@ -1,14 +1,7 @@
 import admin from "firebase-admin";
 
-import * as returnObject from "../../utils/returnObject/returnObject.js";
-import User from "../../models/userModel.js";
-import {
-    settingImage,
-    address,
-} from "../../utils/sharedVariable/sharedVariable.js";
-import Setting from "../../models/settingsModel.js";
-import Device from "../../models/deviceModel.js";
-import Notification from "../../models/notificationModel.js";
+import { User, Settings, Device, Notification } from "../../models/index.js";
+import { sharedVariable, returnObject } from "../../utils/index.js";
 
 // handles notifications for different users and scenarios
 export const handleNotification = async (
@@ -22,11 +15,11 @@ export const handleNotification = async (
 ) => {
     try {
         // get app settings
-        const setting = await Setting.findOne({});
+        const setting = await Settings.findOne({});
 
         // create notification settings object
         const objSetting = {
-            image: settingImage + setting.logo,
+            image: sharedVariable.settingImage + setting.logo,
             title: setting.appTitle,
         };
 
@@ -141,7 +134,8 @@ const sendNotification = async (objSendNotify, deviceType) => {
                 },
                 notification: {
                     icon: "fcm_push_icon",
-                    click_action: address + objSendNotify.data.url,
+                    click_action:
+                        sharedVariable.address + objSendNotify.data.url,
                 },
             };
         }

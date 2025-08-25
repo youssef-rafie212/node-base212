@@ -1,8 +1,7 @@
-import path from "path";
 import { fileURLToPath } from "url";
-import { dirname } from "path";
+import path, { dirname } from "path";
 
-import SaveImage from "../saveImage/saveImage.js";
+import { SaveImage } from "../index.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
