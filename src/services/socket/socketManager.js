@@ -31,11 +31,11 @@ export const initializeSocket = async (server, app) => {
         console.log(`Socket connected with socket id: ${socket.id}`);
 
         // handle user initialization
-        socket.on("initializeUser", async ({ userId }) => {
+        socket.on("initialize", async ({ userId }) => {
             try {
                 if (!userId) {
                     return socket.emit("fail", {
-                        key: "initializeUser",
+                        key: "initialize",
                         message: i18n.__("userIdRequired"),
                     });
                 }
@@ -43,7 +43,7 @@ export const initializeSocket = async (server, app) => {
                 // validate if userId is a valid mongoDb objectId
                 if (!mongoose.Types.ObjectId.isValid(userId)) {
                     return socket.emit("fail", {
-                        key: "initializeUser",
+                        key: "initialize",
                         message: i18n.__("invalidUserId"),
                     });
                 }
@@ -52,7 +52,7 @@ export const initializeSocket = async (server, app) => {
                 const existingSocketId = connectedUsers.get(userId);
                 if (existingSocketId) {
                     return socket.emit("fail", {
-                        key: "initializeUser",
+                        key: "initialize",
                         message: i18n.__("alreadyInitialized"),
                     });
                 }
@@ -65,7 +65,7 @@ export const initializeSocket = async (server, app) => {
                 });
                 if (!userData) {
                     return socket.emit("fail", {
-                        key: "initializeUser",
+                        key: "initialize",
                         message: i18n.__("userNotFound"),
                     });
                 }
@@ -85,7 +85,7 @@ export const initializeSocket = async (server, app) => {
             } catch (error) {
                 console.error("Error initializing user:", error);
                 socket.emit("fail", {
-                    key: "initializeUser",
+                    key: "initialize",
                     message: i18n.__("returnDeveloper"),
                 });
             }
