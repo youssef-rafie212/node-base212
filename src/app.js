@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import compression from "compression";
 import helmet from "helmet";
 import expressRateLimit from "express-rate-limit";
 import i18n from "i18n";
@@ -43,11 +44,28 @@ app.use(express.json());
 // parse form data
 app.use(express.urlencoded({ extended: true }));
 
+// compression
+app.use(compression());
+
 // serve static files
 app.use(express.static(path.join(__dirname, "..", "public")));
 
 // cookie parser
 app.use(cookieParser());
+
+// logging middleware
+app.use((req, res, next) => {
+    res.on("finish", () => {
+        // change color of status code based on value
+        const statusColor = res.statusCode < 400 ? "\x1b[32m" : "\x1b[31m";
+        console.log(
+            `${new Date().toISOString()} ${statusColor}${
+                res.statusCode
+            }\x1b[0m ${req.method} ${req.originalUrl}`
+        );
+    });
+    next();
+});
 
 // cors configuration
 app.use(
@@ -73,12 +91,51 @@ app.use(expressFileUpload());
 app.use(helmet());
 
 // rate limiting
-app.use(
-    expressRateLimit({
-        windowMs: 60 * 1000,
-        max: 50,
-    })
-);
+const limiter = expressRateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 750,
+    handler: (req, res) => {
+        return res.status(429).send(apiError(429, i18n.__("tooManyRequests")));
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: (req) => {
+        // skip rate limiting for certain paths
+        const skipPaths = [
+            "/favicon.ico",
+            "/robots.txt",
+            "/firebase-messaging-sw.js",
+            "/manifest.json",
+        ];
+        return skipPaths.some((p) => req.path.startsWith(p));
+    },
+});
+app.use(limiter);
+
+// common browser requests
+const commonBrowserRequests = [
+    "/favicon.ico",
+    "/firebase-messaging-sw.js",
+    "/manifest.json",
+    "/service-worker.js",
+    "/sw.js",
+];
+
+commonBrowserRequests.forEach((request) => {
+    app.get(request, (req, res) => {
+        if (request === "/favicon.ico") {
+            res.status(204).end(); // no content for favicon
+        } else {
+            res.status(404).end(); // silent 404 for others
+        }
+    });
+});
+
+// standard web files
+app.get("/robots.txt", (req, res) => {
+    res.type("text/plain");
+    res.send("User-agent: *\nDisallow: /");
+});
 
 // api routes
 app.use("/api/v1/auth", authRouter);

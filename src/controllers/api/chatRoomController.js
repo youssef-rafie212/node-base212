@@ -23,6 +23,17 @@ export const createChatRoom = async (req, res) => {
             }
         });
 
+        // check if chat room already exists
+        const existingChatRoom = await ChatRoom.findOne({
+            participants: { $all: data.participants },
+            status: "active",
+        });
+        if (existingChatRoom) {
+            return res
+                .status(400)
+                .send(apiError(400, i18n.__("chatRoomAlreadyExists")));
+        }
+
         // create chat room
         const chatRoom = await ChatRoom.create(data);
 

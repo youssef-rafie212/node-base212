@@ -60,5 +60,7 @@
     "participantsRequired": "Participants are required.",
     "invalidParticipants": "Invalid participants.",
     "roomTypeRequired": "Room type is required.",
-    "invalidRoomType": "Invalid room type."
+    "invalidRoomType": "Invalid room type.",
+    "chatRoomAlreadyExists": "Chat room already exists.",
+    "tooManyRequests": "Too many requests."
 }

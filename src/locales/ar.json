@@ -60,5 +60,7 @@
     "participantsRequired": "المشاركون مطلوبون.",
     "invalidParticipants": "مشاركون غير صالحون.",
     "roomTypeRequired": "نوع الغرفة مطلوب.",
-    "invalidRoomType": "نوع الغرفة غير صالح."
+    "invalidRoomType": "نوع الغرفة غير صالح.",
+    "chatRoomAlreadyExists": "غرفة الدردشة موجودة بالفعل.",
+    "tooManyRequests": "طلبات كثيرة جدًا."
 }
