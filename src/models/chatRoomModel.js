@@ -2,11 +2,6 @@ import mongoose from "mongoose";
 
 const chatRoomSchema = new mongoose.Schema(
     {
-        // for group rooms only
-        admin: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-        },
         participants: [
             {
                 type: mongoose.Schema.Types.ObjectId,
@@ -14,11 +9,6 @@ const chatRoomSchema = new mongoose.Schema(
                 required: true,
             },
         ],
-        roomType: {
-            type: String,
-            enum: ["direct", "group"],
-            default: "direct",
-        },
         lastMessage: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "ChatMessage",
@@ -61,12 +51,6 @@ chatRoomSchema.methods.incrementUnreadCount = function (userId) {
 // method to reset unread count for a user
 chatRoomSchema.methods.resetUnreadCount = function (userId) {
     this.unreadCount.set(userId.toString(), 0);
-    return this.save();
-};
-
-// method to archive chat room
-chatRoomSchema.methods.archive = function () {
-    this.status = "archived";
     return this.save();
 };
 

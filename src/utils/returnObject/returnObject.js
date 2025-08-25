@@ -176,8 +176,8 @@ export const chatRoomObj = (room, lang) => {
     return {
         id: room._id,
         roomType: room.roomType,
-        lastMessage: chatMessageObj(room.lastMessage),
-        lastMessageAt: moment(room.lastMessageAt).format("MMM D, h:mm A"),
+        lastMessage: room.lastMessage ? chatMessageObj(room.lastMessage, lang) : null,
+        lastMessageAt: room.lastMessageAt ? moment(room.lastMessageAt).format("MMM D, h:mm A") : null,
         unreadCount: room.unreadCount || {},
         status: room.status,
         participants: room.participants.map((p) => userObj(p)) || [],

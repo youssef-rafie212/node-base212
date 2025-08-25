@@ -15,7 +15,7 @@ export const createChatRoom = async (req, res) => {
         data.participants.forEach(async (participant) => {
             // check if user exists
             const user = await User.findOne({
-                _id: participant.id,
+                _id: participant,
                 status: "active",
                 isVerified: true,
             });
@@ -26,17 +26,15 @@ export const createChatRoom = async (req, res) => {
             }
         });
 
-        // if the room type is a group then set the group admin
-        if (data.roomType === "group") {
-            data.admin = req.sub.id;
-        }
-        
         // create chat room
         const chatRoom = await ChatRoom.create(data);
 
+        // populate related fields for object creation
+        await chatRoom.populate("participants lastMessage");
+
         res.send(
             apiResponse(
-                201,
+                200,
                 i18n.__("chatRoomCreated"),
                 chatRoomObj(chatRoom, req.lang)
             )
@@ -85,38 +83,6 @@ export const getChatRooms = async (req, res) => {
                 totalCount,
                 page,
                 totalPages
-            )
-        );
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
-    }
-};
-
-// leave a group room
-export const leaveChatRoom = async (req, res) => {
-    try {
-        const { roomId } = req.params;
-        const userId = req.sub.id;
-
-        // find chat room
-        const chatRoom = await ChatRoom.findById(roomId);
-        if (!chatRoom) {
-            return res.status(404).send(apiError(404, i18n.__("notFound")));
-        }
-
-        // remove user from participants
-        chatRoom.participants = chatRoom.participants.filter(
-            (participant) => participant.toString() !== userId
-        );
-
-        await chatRoom.save();
-
-        res.send(
-            apiResponse(
-                200,
-                i18n.__("chatRoomLeft"),
-                chatRoomObj(chatRoom, req.lang)
             )
         );
     } catch (error) {

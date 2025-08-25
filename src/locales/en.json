@@ -56,5 +56,9 @@
     "languageUpdated": "Language updated successfully.",
     "userDeleted": "User deleted successfully.",
     "chatRoomsFetched": "Chat rooms fetched successfully.",
-    "chatRoomCreated": "Chat room created successfully."
+    "chatRoomCreated": "Chat room created successfully.",
+    "participantsRequired": "Participants are required.",
+    "invalidParticipants": "Invalid participants.",
+    "roomTypeRequired": "Room type is required.",
+    "invalidRoomType": "Invalid room type."
 }

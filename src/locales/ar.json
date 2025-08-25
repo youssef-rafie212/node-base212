@@ -56,5 +56,9 @@
     "languageUpdated": "تم تحديث اللغة بنجاح.",
     "userDeleted": "تم حذف المستخدم بنجاح.",
     "chatRoomsFetched": "تم جلب غرف الدردشة بنجاح.",
-    "chatRoomCreated": "تم إنشاء غرفة الدردشة بنجاح."
+    "chatRoomCreated": "تم إنشاء غرفة الدردشة بنجاح.",
+    "participantsRequired": "المشاركون مطلوبون.",
+    "invalidParticipants": "مشاركون غير صالحون.",
+    "roomTypeRequired": "نوع الغرفة مطلوب.",
+    "invalidRoomType": "نوع الغرفة غير صالح."
 }

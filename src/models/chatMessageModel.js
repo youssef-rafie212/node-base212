@@ -27,6 +27,11 @@ const chatMessageSchema = new mongoose.Schema(
             ref: "ChatMessage",
             default: null,
         },
+        status: {
+            type: String,
+            enum: ["active", "deleted"],
+            default: "active",
+        },
     },
     {
         timestamps: true,

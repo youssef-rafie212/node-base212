@@ -15,6 +15,8 @@ import apiError from "./utils/api/apiError.js";
 import globalErrorHandler from "./utils/error/globalErrorHandler.js";
 import authRouter from "./routes/api/authRoutes.js";
 import userRouter from "./routes/api/userRoutes.js";
+import chatRouter from "./routes/api/chatRoomRoutes.js";
+import ChatMessage from "./models/chatMessageModel.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -87,6 +89,18 @@ app.use(
 app.use("/api/v1/auth", authRouter);
 
 app.use("/api/v1/users", userRouter);
+
+app.use("/api/v1/chat-rooms", chatRouter);
+
+// test route
+app.use("/api/v1/test", async (req, res) => {
+    await ChatMessage.create({
+        content: "Test message",
+        sender: "68ab180c252a1aa640e5be62",
+        chatRoom: "68ab280888ee18e43c8daabf"
+    });
+    res.send("Test route");
+});
 
 // fallback route (404)
 app.use((req, res) => {
