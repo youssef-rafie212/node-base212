@@ -62,5 +62,11 @@
     "roomTypeRequired": "Room type is required.",
     "invalidRoomType": "Invalid room type.",
     "chatRoomAlreadyExists": "Chat room already exists.",
-    "tooManyRequests": "Too many requests."
+    "tooManyRequests": "Too many requests.",
+    "roomIdRequired": "Room ID is required.",
+    "roomNotFound": "Room not found.",
+    "notInitialized": "User is not initialized.",
+    "invalidRequest": "Invalid request.",
+    "cannotChatWithSelf": "Cannot chat with self.",
+    "messageCannotBeEmpty": "Message cannot be empty."
 }

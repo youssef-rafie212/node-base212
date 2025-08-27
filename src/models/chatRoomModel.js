@@ -34,6 +34,22 @@ const chatRoomSchema = new mongoose.Schema(
     }
 );
 
+// static method to find or create chat room between two users
+chatRoomSchema.statics.findOrCreateChatRoom = function (user1Id, user2Id) {
+    return this.findOne({
+        participants: { $all: [user1Id, user2Id] },
+        status: "active",
+    }).then((chatRoom) => {
+        if (chatRoom) {
+            return chatRoom;
+        }
+        // Create new chat room
+        return this.create({
+            participants: [user1Id, user2Id],
+        });
+    });
+};
+
 // method to get the other participant
 chatRoomSchema.methods.getOtherParticipant = function (currentUserId) {
     return this.participants.find(

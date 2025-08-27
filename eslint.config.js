@@ -26,7 +26,7 @@ export default [
             "no-unused-vars": "off",
             "no-undef": "error",
             "no-redeclare": "error",
-            "no-shadow": "warn",
+            "no-shadow": "off",
             "no-unreachable": "error",
             "no-duplicate-case": "error",
             "no-fallthrough": "error",

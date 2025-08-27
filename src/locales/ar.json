@@ -62,5 +62,11 @@
     "roomTypeRequired": "نوع الغرفة مطلوب.",
     "invalidRoomType": "نوع الغرفة غير صالح.",
     "chatRoomAlreadyExists": "غرفة الدردشة موجودة بالفعل.",
-    "tooManyRequests": "طلبات كثيرة جدًا."
+    "tooManyRequests": "طلبات كثيرة جدًا.",
+    "roomIdRequired": "معرف الغرفة مطلوب.",
+    "roomNotFound": "لم يتم العثور على الغرفة.",
+    "notInitialized": "لم يتم تهيئة المستخدم.",
+    "invalidRequest": "طلب غير صالح.",
+    "cannotChatWithSelf": "لا يمكنك الدردشة مع نفسك.",
+    "messageCannotBeEmpty": "لا يمكن أن تكون الرسالة فارغة."
 }

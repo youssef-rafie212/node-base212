@@ -129,46 +129,36 @@ export const sendNotifyObj = (
     };
 };
 
-export const chatMessageObj = (message, lang) => {
-    moment.locale(lang); // set the appropriate language
-
-    let content = message.content;
-
-    if (message.messageType === "image") {
-        content =
-            sharedVariable.address + sharedVariable.chatImage + message.content;
-    } else if (message.messageType === "audio") {
-        content =
-            sharedVariable.address + sharedVariable.chatAudio + message.content;
-    }
+export const messageUserObj = (user) => {
+    const avatar =
+        !user.avatar || user.avatar === "" || user.avatar === "default.png"
+            ? sharedVariable.address + sharedVariable.usersImage + "default.png"
+            : user.avatar.startsWith("http") // handle social login pictures
+            ? user.avatar
+            : sharedVariable.address +
+              sharedVariable.usersImage +
+              user.id +
+              "/" +
+              user.avatar;
 
     return {
-        id: message._id,
-        chatRoom: message.chatRoom,
-        sender: userObj(message.sender),
-        content,
-        messageType: message.messageType,
-        replyTo: message.replyTo
-            ? chatMessageWithNoReplyObj(message.replyTo, lang)
-            : null,
-        createdAt: moment(message.createdAt).format("MMM D, h:mm A"),
-        updatedAt: moment(message.updatedAt).format("MMM D, h:mm A"),
+        id: user._id,
+        name: user.name,
+        avatar,
     };
 };
 
-// chat message object without reply to avoid recursion
-export const chatMessageWithNoReplyObj = (message, lang) => {
+export const chatMessageObj = (message, lang) => {
     moment.locale(lang); // set the appropriate language
 
     return {
         id: message._id,
-        chatRoom: message.chatRoom,
-        sender: userObj(message.sender),
+        chatRoomId: message.chatRoom,
+        sender: messageUserObj(message.sender),
         content: message.content,
         messageType: message.messageType,
-        replyTo: null,
-        createdAt: moment(message.createdAt).format("MMM D, h:mm A"),
-        updatedAt: moment(message.updatedAt).format("MMM D, h:mm A"),
+        createdAt: moment(message.createdAt).format("h:mm A"),
+        updatedAt: moment(message.updatedAt).format("h:mm A"),
     };
 };
 
@@ -182,12 +172,12 @@ export const chatRoomObj = (room, lang) => {
             ? chatMessageObj(room.lastMessage, lang)
             : null,
         lastMessageAt: room.lastMessageAt
-            ? moment(room.lastMessageAt).format("MMM D, h:mm A")
+            ? moment(room.lastMessageAt).format("h:mm A")
             : null,
         unreadCount: room.unreadCount || {},
         status: room.status,
         participants: room.participants.map((p) => userObj(p)) || [],
-        createdAt: moment(room.createdAt).format("MMM D, h:mm A"),
-        updatedAt: moment(room.updatedAt).format("MMM D, h:mm A"),
+        createdAt: moment(room.createdAt).format("h:mm A"),
+        updatedAt: moment(room.updatedAt).format("h:mm A"),
     };
 };
