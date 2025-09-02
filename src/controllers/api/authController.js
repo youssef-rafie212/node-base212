@@ -20,31 +20,6 @@ import {
 } from "../../helpers/index.js";
 import { User } from "../../models/index.js";
 
-// generate a csrf token for the current request
-export const getCsrfToken = (req, res) => {
-    const token = generateCsrfToken(req, res);
-    res.send(apiResponse(200, i18n.__("tokenGenerated"), { token }));
-};
-
-// generate a token for a user (for testing)
-export const generateToken = async (req, res) => {
-    try {
-        const data = req.validatedData;
-
-        const user = await User.findOne({ _id: data.id, status: "active" });
-        if (!user) {
-            return res.status(404).send(apiError(404, i18n.__("userNotFound")));
-        }
-
-        const token = await tokens.newToken(user._id, user.type);
-
-        res.send(apiResponse(200, i18n.__("tokenGenerated"), { token }));
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
-    }
-};
-
 // local sign up for user with full data
 export const signUp = async (req, res) => {
     try {
@@ -55,7 +30,7 @@ export const signUp = async (req, res) => {
 
         // check for duplicate email if it exists in body
         if (data.email) {
-            const isDuplicate = await duplicate("email", data.email);
+            const isDuplicate = await duplicate(model, "email", data.email);
             if (isDuplicate) {
                 return res
                     .status(400)
@@ -65,7 +40,11 @@ export const signUp = async (req, res) => {
 
         // check for duplicate phone if it exists in body
         if (data.phone) {
-            const isPhoneDuplicate = await duplicate("phone", data.phone);
+            const isPhoneDuplicate = await duplicate(
+                model,
+                "phone",
+                data.phone
+            );
             if (isPhoneDuplicate) {
                 return res
                     .status(400)

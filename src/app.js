@@ -13,6 +13,10 @@ import path, { dirname } from "path";
 
 import { globalErrorHandler, apiError } from "./utils/index.js";
 import { authRouter, userRouter, chatRoomRouter } from "./routes/api/index.js";
+import {
+    authRouter as authDashboardRouter,
+    roleRouter,
+} from "./routes/dashboard/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -139,13 +143,13 @@ app.get("/robots.txt", (req, res) => {
 
 // api routes
 app.use("/api/v1/auth", authRouter);
-
 app.use("/api/v1/users", userRouter);
-
 app.use("/api/v1/chat-rooms", chatRoomRouter);
 
-// test route
-app.use("/api/v1/test", async (req, res) => {});
+// dashboard routes
+app.use("/api/v1/dashboard/auth", authDashboardRouter);
+app.use("/api/v1/dashboard/users", userRouter);
+app.use("/api/v1/dashboard/roles", roleRouter);
 
 // fallback route (404)
 app.use((req, res) => {

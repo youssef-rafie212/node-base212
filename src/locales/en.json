@@ -68,5 +68,14 @@
     "notInitialized": "User is not initialized.",
     "invalidRequest": "Invalid request.",
     "cannotChatWithSelf": "Cannot chat with self.",
-    "messageCannotBeEmpty": "Message cannot be empty."
+    "messageCannotBeEmpty": "Message cannot be empty.",
+    "documentCreated": "Document created successfully.",
+    "nameExists": "Name already exists.",
+    "documentsFetched": "Documents fetched successfully.",
+    "documentNotFound": "Document not found.",
+    "documentUpdated": "Document updated successfully.",
+    "documentDeleted": "Document deleted successfully.",
+    "cantModifyAdminRole": "Cannot modify admin role.",
+    "permissionsRequired": "Permissions are required.",
+    "invalidPermissions": "Invalid permissions."
 }

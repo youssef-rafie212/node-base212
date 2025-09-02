@@ -6,15 +6,6 @@ import { authenticate, validateRequest } from "../../middlewares/index.js";
 
 const router = express.Router();
 
-router.get("/csrf-token", authController.getCsrfToken);
-
-router.get(
-    "/generate-token/:id",
-    authValidation.validateGenerateToken,
-    validateRequest,
-    authController.generateToken
-);
-
 router.post(
     "/sign-up",
     authValidation.validateSignUp,

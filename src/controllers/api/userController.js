@@ -48,6 +48,7 @@ export const updateMe = async (req, res) => {
         // check for duplicate email if it exists in body
         if (data.email && user.email !== data.email) {
             const isDuplicate = await duplicate(
+                User,
                 "email",
                 data.email,
                 req.sub.id
@@ -65,6 +66,7 @@ export const updateMe = async (req, res) => {
         // check for duplicate phone if it exists in body
         if (data.phone && user.phone !== data.phone) {
             const isPhoneDuplicate = await duplicate(
+                User,
                 "phone",
                 data.phone,
                 req.sub.id

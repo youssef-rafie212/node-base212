@@ -68,5 +68,14 @@
     "notInitialized": "لم يتم تهيئة المستخدم.",
     "invalidRequest": "طلب غير صالح.",
     "cannotChatWithSelf": "لا يمكنك الدردشة مع نفسك.",
-    "messageCannotBeEmpty": "لا يمكن أن تكون الرسالة فارغة."
+    "messageCannotBeEmpty": "لا يمكن أن تكون الرسالة فارغة.",
+    "documentCreated": "تم انشاء المستند بنجاح.",
+    "nameExists": "الاسم موجود بالفعل.",
+    "documentsFetched": "تم جلب المستندات بنجاح.",
+    "documentNotFound": "لم يتم العثور على المستند.",
+    "documentUpdated": "تم تحديث المستند بنجاح.",
+    "documentDeleted": "تم حذف المستند بنجاح.",
+    "cantModifyAdminRole": "لا يمكن تعديل دور الادمن",
+    "permissionsRequired": "الصلاحيات مطلوبة.",
+    "invalidPermissions": "صلاحيات غير صالحة."
 }

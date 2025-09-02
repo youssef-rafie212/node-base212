@@ -7,7 +7,8 @@ import { apiError } from "../../utils/index.js";
 const authorize = async (req, res, next) => {
     try {
         // find admin by id
-        const admin = await Admin.findById(req.sub.id).populate("role");
+        const admin = await Admin.findById(req.admin.id).populate("role");
+
         if (!admin || admin.status !== "active") {
             return res.status(403).send(apiError(403, i18n.__("forbidden")));
         }
@@ -28,6 +29,7 @@ const authorize = async (req, res, next) => {
 
         // check if the admin has permission for the requested URL
         if (!adminPermissions.includes(sanitizedUrl)) {
+            console.log(`admin has no permission for ${sanitizedUrl}`);
             return res.status(403).send(apiError(403, i18n.__("forbidden")));
         }
 

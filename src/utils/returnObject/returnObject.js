@@ -181,3 +181,44 @@ export const chatRoomObj = (room, lang) => {
         updatedAt: moment(room.updatedAt).format("h:mm A"),
     };
 };
+
+export const adminObj = (admin, role) => {
+    const avatar =
+        !admin.avatar || admin.avatar === "" || admin.avatar === "default.png"
+            ? sharedVariable.address +
+              sharedVariable.supervisorsImage +
+              "default.png"
+            : sharedVariable.address +
+              sharedVariable.supervisorsImage +
+              admin.id +
+              "/" +
+              admin.avatar;
+
+    return {
+        id: admin._id,
+        name: admin.name,
+        email: admin.email,
+        phone: admin.phone,
+        avatar,
+        status: admin.status,
+        language: admin.language,
+        isAdmin: admin.isAdmin,
+        role: role.name,
+    };
+};
+
+export const adminWithTokenObj = (admin, role, token) => {
+    return {
+        token,
+        admin: adminObj(admin, role),
+    };
+};
+
+export const roleObj = (role) => {
+    return {
+        id: role._id,
+        name: role.name,
+        status: role.status,
+        permissions: role.permissions,
+    };
+};

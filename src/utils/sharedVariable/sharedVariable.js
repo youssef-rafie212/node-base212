@@ -8,7 +8,7 @@ export const address =
         : process.env.ADDRESS_PRODUCTION || "https://base.com";
 export const usersImage = "/assets/uploads/users/";
 export const brandImage = "/assets/uploads/brands/";
-export const supervisorsImage = "/assets/uploads/users/supervisors/";
+export const supervisorsImage = "/assets/uploads/supervisors/";
 export const settingImage = "/assets/uploads/logo/";
 export const socialImage = "/assets/uploads/socialMedia/";
 export const countryImage = "/assets/uploads/country/";
@@ -18,32 +18,49 @@ export const chatAudio = "/assets/uploads/chat/audios/";
 export const allPermissions = [
     {
         id: "1",
-        parent: "/settings",
-        titleEn: "settings",
-        titleAr: "الاعدادات",
+        parent: "/roles",
+        titleEn: "roles",
+        titleAr: "الأدوار",
         child: [
             {
-                titleEn: "get settings",
-                titleAr: "عرض الاعدادات",
-                route: "/get-settings",
+                titleEn: "get roles",
+                titleAr: "عرض الادوار",
+                route: "/get-all-roles",
             },
             {
-                titleEn: "update settings",
-                titleAr: "تحديث الاعدادات",
-                route: "/update-settings",
+                titleEn: "get role",
+                titleAr: "عرض دور",
+                route: "/get-role",
             },
-        ],
-    },
-    {
-        id: "2",
-        parent: "",
-        titleEn: "authentication",
-        titleAr: "التحقق",
-        child: [
             {
-                titleEn: "logout",
-                titleAr: "تسجيل الخروج",
-                route: "/logout",
+                titleEn: "update role name",
+                titleAr: "تحديث اسم الادوار",
+                route: "/update-role-name",
+            },
+            {
+                titleEn: "delete role",
+                titleAr: "حذف دور",
+                route: "/delete-role",
+            },
+            {
+                titleEn: "add permissions to role",
+                titleAr: "اضافة صلاحيات للادوار",
+                route: "/add-permissions-to-role",
+            },
+            {
+                titleEn: "remove permissions from role",
+                titleAr: "حذف صلاحيات من الادوار",
+                route: "/remove-permissions-from-role",
+            },
+            {
+                titleEn: "get all permissions",
+                titleAr: "عرض جميع الصلاحيات",
+                route: "/get-all-permissions",
+            },
+            {
+                titleEn: "create role",
+                titleAr: "اضافة دور",
+                route: "/create-role",
             },
         ],
     },
