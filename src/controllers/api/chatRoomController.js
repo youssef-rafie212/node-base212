@@ -1,7 +1,7 @@
 import i18n from "i18n";
 
 import { apiError, apiResponse, returnObject } from "../../utils/index.js";
-import { ChatRoom, User } from "../../models/index.js";
+import { ChatRoom } from "../../models/index.js";
 
 // get user's chat rooms
 export const getChatRooms = async (req, res) => {
@@ -16,11 +16,11 @@ export const getChatRooms = async (req, res) => {
         const skip = (page - 1) * limit;
 
         // get chat rooms and total count
-        const query = { participants: id, status: { $ne: "deleted" } };
+        const query = { "participants.user": id, status: { $ne: "deleted" } };
         const [totalCount, chatRooms] = await Promise.all([
             ChatRoom.countDocuments(query),
             ChatRoom.find(query)
-                .populate("participants")
+                .populate("participants.user")
                 .populate({
                     path: "lastMessage",
                     populate: {

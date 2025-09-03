@@ -7,10 +7,10 @@ export const addUserDevice = async (
     deviceType = "android"
 ) => {
     // check if the device already exists first
-    const existingDevice = await Device.findOne({ userId, fcmToken });
+    const existingDevice = await Device.findOne({ user: userId, fcmToken });
     if (!existingDevice) {
         await Device.create({
-            userId,
+            user: userId,
             fcmToken,
             deviceType,
         });
@@ -19,5 +19,5 @@ export const addUserDevice = async (
 
 // deletes all user devices
 export const deleteAllUserDevices = async (userId) => {
-    await Device.deleteMany({ userId });
+    await Device.deleteMany({ user: userId });
 };

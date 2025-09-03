@@ -1,5 +1,6 @@
 import { generateJwt } from "../../utils/index.js";
 import { UserToken } from "../../models/index.js";
+import getRef from "../refMap/refMap.js";
 
 // generate and store new jwt token
 export const newToken = async (userId, userType) => {
@@ -8,7 +9,11 @@ export const newToken = async (userId, userType) => {
 
     // store the token (if the type is not admin)
     if (userType !== "admin") {
-        await UserToken.create({ userId, token });
+        await UserToken.create({
+            user: userId,
+            userRef: getRef(userType),
+            token,
+        });
     }
 
     return token;
@@ -16,5 +21,5 @@ export const newToken = async (userId, userType) => {
 
 // delete all user tokens
 export const deleteAllUserTokens = async (userId) => {
-    await UserToken.deleteMany({ userId });
+    await UserToken.deleteMany({ user: userId });
 };

@@ -1,7 +1,8 @@
 import jwt from "jsonwebtoken";
 import i18n from "i18n";
 
-import { User, UserToken } from "../../models/index.js";
+import { UserToken } from "../../models/index.js";
+import { getModel } from "../../helpers/index.js";
 import { apiError } from "../../utils/index.js";
 
 // middleware that protects routes and authenticates the user
@@ -26,8 +27,11 @@ const authenticate = (req, res, next) => {
                         .send(apiError(401, i18n.__("unauthorized")));
                 }
 
+                // get model based on type
+                const model = getModel(decoded.userType);
+
                 // find user by id
-                const user = await User.findById(decoded.id);
+                const user = await model.findById(decoded.id);
 
                 // validate the user
                 if (!user || user.status !== "active" || !user.isVerified) {
@@ -39,7 +43,6 @@ const authenticate = (req, res, next) => {
                 // check if the token exists in the database
                 const userToken = await UserToken.findOne({
                     token,
-                    userId: decoded.id,
                 });
                 if (!userToken) {
                     return res

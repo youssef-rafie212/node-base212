@@ -2,9 +2,14 @@ import mongoose from "mongoose";
 
 const userTokenSchema = new mongoose.Schema(
     {
-        userId: {
+        user: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+            refPath: "userRef",
+            required: true,
+        },
+        userRef: {
+            type: String,
+            enum: ["User"],
             required: true,
         },
         token: {

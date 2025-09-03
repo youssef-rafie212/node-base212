@@ -36,7 +36,7 @@ const userSchema = new mongoose.Schema(
         isVerified: { type: Boolean, default: false },
         dataCompleted: { type: Boolean, default: false },
     },
-    { discriminatorKey: "type", timestamps: true }
+    { timestamps: true }
 );
 
 // pre save hook to hash the password before saving

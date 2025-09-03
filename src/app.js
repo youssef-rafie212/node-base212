@@ -151,6 +151,9 @@ app.use("/api/v1/dashboard/auth", authDashboardRouter);
 app.use("/api/v1/dashboard/users", userRouter);
 app.use("/api/v1/dashboard/roles", roleRouter);
 
+// test route
+app.get("/test", async (req, res) => {});
+
 // fallback route (404)
 app.use((req, res) => {
     res.status(404).send(apiError(404, i18n.__("notFound")));

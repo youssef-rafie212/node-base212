@@ -4,7 +4,6 @@ import admin from "firebase-admin";
 import {
     apiError,
     apiResponse,
-    generateCsrfToken,
     returnObject,
 } from "../../utils/index.js";
 import {
@@ -18,7 +17,6 @@ import {
     afterAuth,
     validateCountryExists,
 } from "../../helpers/index.js";
-import { User } from "../../models/index.js";
 
 // local sign up for user with full data
 export const signUp = async (req, res) => {
@@ -97,8 +95,11 @@ export const requestOtpEmail = async (req, res) => {
     try {
         const data = req.validatedData;
 
+        // get model based on type
+        const model = getModel(data.type);
+
         // find user by email
-        const user = await User.findOne({
+        const user = await model.findOne({
             email: data.email,
             status: "active",
         });
@@ -130,8 +131,11 @@ export const requestOtpPhone = async (req, res) => {
     try {
         const data = req.validatedData;
 
+        // get model based on type
+        const model = getModel(data.type);
+
         // find user by phone
-        const user = await User.findOne({
+        const user = await model.findOne({
             phone: data.phone,
             status: "active",
         });
@@ -267,8 +271,11 @@ export const verifyEmail = async (req, res) => {
     try {
         const data = req.validatedData;
 
+        // get model based on type
+        const model = getModel(data.type);
+
         // find user by email and activation code
-        const user = await User.findOne({
+        const user = await model.findOne({
             email: data.email,
             status: "active",
         });
@@ -308,8 +315,11 @@ export const verifyPhone = async (req, res) => {
     try {
         const data = req.validatedData;
 
+        // get model based on type
+        const model = getModel(data.type);
+
         // find user by phone and activation code
-        const user = await User.findOne({
+        const user = await model.findOne({
             phone: data.phone,
             status: "active",
         });
@@ -352,8 +362,11 @@ export const completeData = async (req, res) => {
 
         const data = req.validatedData;
 
+        // get model based on type
+        const model = getModel(sub.userType);
+
         // get the user document
-        const user = await User.findOne({
+        const user = await model.findOne({
             _id: sub.id,
             status: "active",
             isVerified: true,
@@ -412,8 +425,11 @@ export const resetPasswordEmail = async (req, res) => {
     try {
         const data = req.validatedData;
 
+        // get model based on type
+        const model = getModel(data.type);
+
         // find user by email
-        const user = await User.findOne({
+        const user = await model.findOne({
             email: data.email,
             status: "active",
             isVerified: true,
@@ -453,8 +469,11 @@ export const resetPasswordPhone = async (req, res) => {
     try {
         const data = req.validatedData;
 
+        // get model based on type
+        const model = getModel(data.type);
+
         // find user by phone
-        const user = await User.findOne({
+        const user = await model.findOne({
             phone: data.phone,
             status: "active",
             isVerified: true,

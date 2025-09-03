@@ -95,6 +95,13 @@ export const validateSignUp = [
 ];
 
 export const validateRequestOtpEmail = [
+    body("type")
+        .trim()
+        .notEmpty()
+        .withMessage(() => i18n.__("typeRequired"))
+        .isIn(["user"])
+        .withMessage(() => i18n.__("invalidType")),
+
     body("email")
         .trim()
         .notEmpty()
@@ -104,6 +111,13 @@ export const validateRequestOtpEmail = [
 ];
 
 export const validateRequestOtpPhone = [
+    body("type")
+        .trim()
+        .notEmpty()
+        .withMessage(() => i18n.__("typeRequired"))
+        .isIn(["user"])
+        .withMessage(() => i18n.__("invalidType")),
+
     body("phone")
         .trim()
         .notEmpty()
@@ -148,6 +162,13 @@ export const validateLocalSignIn = [
 ];
 
 export const validateVerifyEmail = [
+    body("type")
+        .trim()
+        .notEmpty()
+        .withMessage(() => i18n.__("typeRequired"))
+        .isIn(["user"])
+        .withMessage(() => i18n.__("invalidType")),
+
     body("email")
         .trim()
         .notEmpty()
@@ -164,6 +185,13 @@ export const validateVerifyEmail = [
 ];
 
 export const validateVerifyPhone = [
+    body("type")
+        .trim()
+        .notEmpty()
+        .withMessage(() => i18n.__("typeRequired"))
+        .isIn(["user"])
+        .withMessage(() => i18n.__("invalidType")),
+
     body("phone")
         .trim()
         .notEmpty()
@@ -184,6 +212,13 @@ export const validateCompleteData = [
 ];
 
 export const validateResetPasswordEmail = [
+    body("type")
+        .trim()
+        .notEmpty()
+        .withMessage(() => i18n.__("typeRequired"))
+        .isIn(["user"])
+        .withMessage(() => i18n.__("invalidType")),
+
     body("email")
         .trim()
         .notEmpty()
@@ -217,6 +252,13 @@ export const validateResetPasswordEmail = [
 ];
 
 export const validateResetPasswordPhone = [
+    body("type")
+        .trim()
+        .notEmpty()
+        .withMessage(() => i18n.__("typeRequired"))
+        .isIn(["user"])
+        .withMessage(() => i18n.__("invalidType")),
+
     body("phone")
         .trim()
         .notEmpty()

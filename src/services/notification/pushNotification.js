@@ -1,7 +1,8 @@
 import admin from "firebase-admin";
 
-import { User, Settings, Device, Notification } from "../../models/index.js";
+import { Settings, Device, Notification } from "../../models/index.js";
 import { sharedVariable, returnObject } from "../../utils/index.js";
+import { getModel } from "../../helpers/index.js";
 
 // handles notifications for different users and scenarios
 export const handleNotification = async (
@@ -37,8 +38,15 @@ export const handleNotification = async (
         // save notification to database
         await saveNotification(objNotify);
 
+        // get model based on type
+        const model = getModel(objUsers.userRef);
+
+        if (!model) {
+            return;
+        }
+
         // get the receiver document
-        const user = await User.findOne({
+        const user = await model.findOne({
             _id: objUsers.userId,
             status: "active",
             isNotify: true,
@@ -47,7 +55,7 @@ export const handleNotification = async (
         if (user) {
             // get receiver devices
             const devices = await Device.find({
-                userId: objUsers.userId,
+                user: objUsers.userId,
                 deviceType: { $in: ["android", "ios", "web"] },
             });
 
@@ -85,8 +93,15 @@ const saveNotification = async (objNotify) => {
         // update receiver notification count
         const updateField = { $inc: { notifyCount: 1 } };
 
-        await User.findOneAndUpdate(
-            { _id: notification.userId, status: "active" },
+        // get model based on type
+        const model = getModel(objNotify.userRef);
+
+        if (!model) {
+            return;
+        }
+
+        await model.findOneAndUpdate(
+            { _id: notification.user, status: "active" },
             updateField,
             { new: true }
         );
@@ -106,6 +121,8 @@ const sendNotification = async (objSendNotify, deviceType) => {
             },
             data: objSendNotify.data, // custom data for all platforms
         };
+
+        console.log("FCM TOKEN:", objSendNotify.token);
 
         // add platform-specific options
         if (deviceType === "ios") {
@@ -139,6 +156,8 @@ const sendNotification = async (objSendNotify, deviceType) => {
                 },
             };
         }
+
+        console.log("Message:", message);
 
         // send the notification
         const response = await admin.messaging().send(message);

@@ -3,9 +3,11 @@ export const duplicateArEnName = async (model, name, updateId) => {
     const duplicate = updateId
         ? await model.findOne({
               _id: { $ne: updateId },
+              status: { $ne: "deleted" },
               $or: [{ "name.ar": name.ar }, { "name.en": name.en }],
           })
         : await model.findOne({
+              status: { $ne: "deleted" },
               $or: [{ "name.ar": name.ar }, { "name.en": name.en }],
           });
 

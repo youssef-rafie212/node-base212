@@ -3,8 +3,9 @@ import { Server } from "socket.io";
 import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 
-import { User, UserToken, ChatRoom, ChatMessage } from "../../models/index.js";
+import { UserToken, ChatRoom, ChatMessage } from "../../models/index.js";
 import { returnObject } from "../../utils/index.js";
+import { getModel, getRef } from "../../helpers/index.js";
 
 let io;
 export const connectedUsers = new Map(); // store connected users (fallback when Redis is unavailable)
@@ -42,8 +43,11 @@ export const initializeSocket = async (server, app) => {
             // verify JWT
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+            // get model based on type
+            const model = getModel(decoded.userType);
+
             // get user from DB
-            const user = await User.findOne({
+            const user = await model.findOne({
                 _id: decoded.id,
                 status: "active",
                 isVerified: true,
@@ -57,7 +61,6 @@ export const initializeSocket = async (server, app) => {
 
             // check if token exists in the DB
             const tokenExists = await UserToken.findOne({
-                userId: user._id,
                 token: token,
             });
 
@@ -70,6 +73,7 @@ export const initializeSocket = async (server, app) => {
             // attach user data to socket
             socket.userId = user._id.toString();
             socket.lang = user.language || "ar";
+            socket.userType = user.type;
 
             // cache socket
             connectedUsers.set(socket.userId, socket.id);
@@ -90,109 +94,128 @@ export const initializeSocket = async (server, app) => {
         console.log(`Socket connected with socket id: ${socket.id}`);
 
         // handle get chat messages
-        socket.on("getChat", async ({ otherId, page = 1, limit = 20 }) => {
-            try {
-                // validate otherId parameter
-                if (!otherId) {
-                    return socket.emit("fail", {
-                        message: i18n.__("invalidRequest"),
-                    });
-                }
-
-                // validate if otherId is a valid mongoDB objectId
-                if (!mongoose.Types.ObjectId.isValid(otherId)) {
-                    return socket.emit("fail", {
-                        message: i18n.__("invalidId"),
-                    });
-                }
-
-                // check if trying to chat with themselves
-                if (socket.userId === otherId) {
-                    return socket.emit("fail", {
-                        message: i18n.__("cannotChatWithSelf"),
-                    });
-                }
-
-                // check if target user exists and is active
-                const targetUser = await User.findOne({
-                    _id: otherId,
-                    status: { $ne: "delete" },
-                    isVerified: true,
-                });
-
-                if (!targetUser) {
-                    return socket.emit("fail", {
-                        message: i18n.__("userNotFound"),
-                    });
-                }
-
-                // parse pagination parameters
-                const pageNum = parseInt(page) || 1;
-                const limitNum = parseInt(limit) || 20;
-                const skipNum = (pageNum - 1) * limitNum;
-
-                // find or create chat room between the two users
-                const chatRoom = await ChatRoom.findOrCreateChatRoom(
-                    socket.userId,
-                    otherId
-                );
-
-                let messages = [];
-                let totalCount = 0;
-
-                if (chatRoom) {
-                    // get total count of messages in this chat room
-                    totalCount = await ChatMessage.countDocuments({
-                        chatRoom: chatRoom._id,
-                    });
-
-                    // get messages with pagination (latest first)
-                    if (totalCount > 0) {
-                        messages = await ChatMessage.find({
-                            chatRoom: chatRoom._id,
-                        })
-                            .select("sender content messageType createdAt")
-                            .populate("sender", "name avatar")
-                            .sort({ createdAt: -1 }) // Latest messages first
-                            .skip(skipNum)
-                            .limit(limitNum);
+        socket.on(
+            "getChat",
+            async ({ otherId, otherType, page = 1, limit = 20 }) => {
+                try {
+                    // validate otherId parameter
+                    if (!otherId) {
+                        return socket.emit("fail", {
+                            message: i18n.__("invalidRequest"),
+                        });
                     }
 
-                    // reset unread count for current user
-                    await chatRoom.resetUnreadCount(socket.userId);
+                    // validate if otherId is a valid mongoDB objectId
+                    if (!mongoose.Types.ObjectId.isValid(otherId)) {
+                        return socket.emit("fail", {
+                            message: i18n.__("invalidId"),
+                        });
+                    }
+
+                    // check if trying to chat with themselves
+                    if (socket.userId === otherId) {
+                        return socket.emit("fail", {
+                            message: i18n.__("cannotChatWithSelf"),
+                        });
+                    }
+
+                    // get model based on otherType
+                    const model = getModel(otherType);
+
+                    // validate if otherType is a valid model
+                    if (!model) {
+                        return socket.emit("fail", {
+                            message: i18n.__("invalidType"),
+                        });
+                    }
+
+                    // check if target user exists and is active
+                    const targetUser = await model.findOne({
+                        _id: otherId,
+                        status: { $ne: "delete" },
+                        isVerified: true,
+                    });
+
+                    if (!targetUser) {
+                        return socket.emit("fail", {
+                            message: i18n.__("userNotFound"),
+                        });
+                    }
+
+                    // parse pagination parameters
+                    const pageNum = parseInt(page) || 1;
+                    const limitNum = parseInt(limit) || 20;
+                    const skipNum = (pageNum - 1) * limitNum;
+
+                    console.log("CURRENT SOCKET DATA", socket);
+
+                    // find or create chat room between the two users
+                    const chatRoom = await ChatRoom.findOrCreateChatRoom(
+                        socket.userId,
+                        socket.userType,
+                        otherId,
+                        otherType
+                    );
+
+                    let messages = [];
+                    let totalCount = 0;
+
+                    if (chatRoom) {
+                        // get total count of messages in this chat room
+                        totalCount = await ChatMessage.countDocuments({
+                            chatRoom: chatRoom._id,
+                        });
+
+                        // get messages with pagination (latest first)
+                        if (totalCount > 0) {
+                            messages = await ChatMessage.find({
+                                chatRoom: chatRoom._id,
+                            })
+                                .select("sender content messageType createdAt")
+                                .populate("sender", "name avatar")
+                                .sort({ createdAt: -1 }) // Latest messages first
+                                .skip(skipNum)
+                                .limit(limitNum);
+                        }
+
+                        // reset unread count for current user
+                        await chatRoom.resetUnreadCount(socket.userId);
+                    }
+
+                    // calculate pagination info
+                    const totalPages = Math.ceil(totalCount / limitNum);
+
+                    // Prepare pagination object
+                    const paginationInfo = {
+                        currentPage: pageNum,
+                        totalPages: totalPages,
+                        limit: limitNum,
+                        totalCount: totalCount,
+                    };
+
+                    // format and send chat data using returnObject helper with language support
+                    const chatDataResponse = messages.map((message) =>
+                        returnObject.chatMessageObj(message, socket.lang)
+                    );
+
+                    socket.join(chatRoom._id.toString());
+                    socket.emit("chatData", {
+                        roomId: chatRoom._id.toString(),
+                        messages: chatDataResponse,
+                        paginationInfo,
+                    });
+
+                    console.log(
+                        `Chat data sent for user ${socket.userId} with ${otherId}, page ${pageNum}`
+                    );
+                } catch (error) {
+                    console.error("Error in getChat event:", error);
+                    socket.emit("fail", {
+                        message: i18n.__("returnDeveloper"),
+                    });
                 }
-
-                // calculate pagination info
-                const totalPages = Math.ceil(totalCount / limitNum);
-
-                // Prepare pagination object
-                const paginationInfo = {
-                    currentPage: pageNum,
-                    totalPages: totalPages,
-                    limit: limitNum,
-                    totalCount: totalCount,
-                };
-
-                // format and send chat data using returnObject helper with language support
-                const chatDataResponse = messages.map((message) =>
-                    returnObject.chatMessageObj(message, socket.lang)
-                );
-
-                socket.join(chatRoom._id.toString());
-                socket.emit("chatData", {
-                    roomId: chatRoom._id.toString(),
-                    messages: chatDataResponse,
-                    paginationInfo,
-                });
-
-                console.log(
-                    `Chat data sent for user ${socket.userId} with ${otherId}, page ${pageNum}`
-                );
-            } catch (error) {
-                console.error("Error in getChat event:", error);
-                socket.emit("fail", { message: i18n.__("returnDeveloper") });
             }
-        });
+        );
 
         // handle send message
         socket.on("sendMessage", async ({ roomId, content }) => {
@@ -228,7 +251,7 @@ export const initializeSocket = async (server, app) => {
                 // find the chat room and validate user access
                 const chatRoom = await ChatRoom.findOne({
                     _id: roomId,
-                    participants: socket.userId,
+                    "participants.user": socket.userId,
                     status: "active",
                 });
 
@@ -242,6 +265,7 @@ export const initializeSocket = async (server, app) => {
                 const newMessage = await ChatMessage.create({
                     chatRoom: chatRoom._id,
                     sender: socket.userId,
+                    userRef: getRef(socket.userType),
                     content: content,
                     messageType: "text",
                 });
@@ -263,8 +287,9 @@ export const initializeSocket = async (server, app) => {
                 });
 
                 const friendId = chatRoom.participants.find(
-                    (participant) => participant.toString() !== socket.userId
-                );
+                    (participant) =>
+                        participant.user.toString() !== socket.userId
+                ).user;
                 const recipientSocketId = connectedUsers.get(
                     friendId.toString()
                 );

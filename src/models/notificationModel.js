@@ -2,11 +2,21 @@ import mongoose from "mongoose";
 
 let notificationSchema = new mongoose.Schema(
     {
-        userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // receiver
-        notifyId: {
+        user: { type: mongoose.Schema.Types.ObjectId, refPath: "userRef" }, // receiver
+        notify: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+            refPath: "notifyRef",
         }, // notifyId is sender
+        userRef: {
+            type: String,
+            enum: ["User"],
+            required: true,
+        },
+        notifyRef: {
+            type: String,
+            enum: ["User"],
+            required: true,
+        },
         content: { type: String, default: "" },
         title: {
             ar: { type: String, default: "" },

@@ -60,9 +60,10 @@ export const notifyObj = (
     data
 ) => {
     return {
-        userId: objUser.userId,
-        notifyId: objUser.notifyId,
-        adminId: objUser.adminId,
+        user: objUser.userId,
+        notify: objUser.notifyId,
+        userRef: objUser.userRef,
+        notifyRef: objUser.notifyRef,
         message: objMessage,
         title: objTitle,
         key,
@@ -176,7 +177,7 @@ export const chatRoomObj = (room, lang) => {
             : null,
         unreadCount: room.unreadCount || {},
         status: room.status,
-        participants: room.participants.map((p) => userObj(p)) || [],
+        participants: room.participants.map((p) => userObj(p.user)) || [],
         createdAt: moment(room.createdAt).format("h:mm A"),
         updatedAt: moment(room.updatedAt).format("h:mm A"),
     };

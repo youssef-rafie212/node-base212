@@ -1,12 +1,21 @@
 import mongoose from "mongoose";
+import { getRef } from "../helpers/index.js";
 
 const chatRoomSchema = new mongoose.Schema(
     {
         participants: [
             {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "User",
-                required: true,
+                _id: false,
+                user: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    refPath: "participants.userRef",
+                    required: true,
+                },
+                userRef: {
+                    type: String,
+                    enum: ["User"],
+                    required: true,
+                },
             },
         ],
         lastMessage: {
@@ -35,17 +44,31 @@ const chatRoomSchema = new mongoose.Schema(
 );
 
 // static method to find or create chat room between two users
-chatRoomSchema.statics.findOrCreateChatRoom = function (user1Id, user2Id) {
+chatRoomSchema.statics.findOrCreateChatRoom = function (
+    user1Id,
+    user1type,
+    user2Id,
+    user2type
+) {
     return this.findOne({
-        participants: { $all: [user1Id, user2Id] },
+        "participants.user": {
+            $all: [user1Id, user2Id],
+        },
         status: "active",
     }).then((chatRoom) => {
         if (chatRoom) {
             return chatRoom;
         }
-        // Create new chat room
+
+        const user1Ref = getRef(user1type);
+        const user2Ref = getRef(user2type);
+
+        // create new chat room
         return this.create({
-            participants: [user1Id, user2Id],
+            participants: [
+                { user: user1Id, userRef: user1Ref },
+                { user: user2Id, userRef: user2Ref },
+            ],
         });
     });
 };
@@ -53,7 +76,7 @@ chatRoomSchema.statics.findOrCreateChatRoom = function (user1Id, user2Id) {
 // method to get the other participant
 chatRoomSchema.methods.getOtherParticipant = function (currentUserId) {
     return this.participants.find(
-        (participant) => !participant.equals(currentUserId)
+        (participant) => !participant.user.equals(currentUserId)
     );
 };
 

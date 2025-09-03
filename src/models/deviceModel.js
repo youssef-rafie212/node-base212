@@ -2,9 +2,8 @@ import mongoose from "mongoose";
 
 const devicesSchema = new mongoose.Schema(
     {
-        userId: {
+        user: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
             required: true,
         },
         fcmToken: { type: String, require: true, default: "" },

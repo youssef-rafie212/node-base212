@@ -40,16 +40,16 @@ if (process.env.ENABLE_HTTPS === "true") {
     server = http.createServer(app);
 }
 
-// start server
-server.listen(process.env.PORT || 3000, () => {
-    console.log(`Server is running on port ${process.env.PORT || 3000}`);
-});
-
 // initialize redis
-export const redisClient = await initializeRedis();
+// export const redisClient = await initializeRedis();
 
 // initialize socket handling
 export const socketServer = await socketManager.initializeSocket(server, app);
 
 // initialize firebase
 initializeFirebase();
+
+// start server
+server.listen(process.env.PORT || 3000, () => {
+    console.log(`Server is running on port ${process.env.PORT || 3000}`);
+});

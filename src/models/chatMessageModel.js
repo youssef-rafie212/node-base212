@@ -9,7 +9,12 @@ const chatMessageSchema = new mongoose.Schema(
         },
         sender: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+            refPath: "userRef",
+            required: true,
+        },
+        userRef: {
+            type: String,
+            enum: ["User"],
             required: true,
         },
         content: {

@@ -6,20 +6,23 @@ import {
     apiResponse,
     fileDelete,
 } from "../../utils/index.js";
-import { User } from "../../models/index.js";
 import {
     duplicate,
     validateCountryExists,
     userAvatars,
     tokens,
     devices,
+    getModel,
 } from "../../helpers/index.js";
 
 // gets current user information
 export const me = async (req, res) => {
     try {
+        // get model based on type
+        const model = getModel(req.sub.userType);
+
         // find the user
-        const user = await User.findOne({ _id: req.sub.id, status: "active" });
+        const user = await model.findOne({ _id: req.sub.id, status: "active" });
         if (!user) {
             return res.status(400).send(apiError(400, i18n.__("userNotFound")));
         }
@@ -39,8 +42,11 @@ export const updateMe = async (req, res) => {
     try {
         const data = req.validatedData;
 
+        // get model based on type
+        const model = getModel(req.sub.userType);
+
         // find the user by id
-        const user = await User.findOne({ _id: req.sub.id, status: "active" });
+        const user = await model.findOne({ _id: req.sub.id, status: "active" });
         if (!user) {
             return res.status(400).send(apiError(400, i18n.__("userNotFound")));
         }
@@ -48,7 +54,7 @@ export const updateMe = async (req, res) => {
         // check for duplicate email if it exists in body
         if (data.email && user.email !== data.email) {
             const isDuplicate = await duplicate(
-                User,
+                model,
                 "email",
                 data.email,
                 req.sub.id
@@ -66,7 +72,7 @@ export const updateMe = async (req, res) => {
         // check for duplicate phone if it exists in body
         if (data.phone && user.phone !== data.phone) {
             const isPhoneDuplicate = await duplicate(
-                User,
+                model,
                 "phone",
                 data.phone,
                 req.sub.id
@@ -119,8 +125,11 @@ export const updateLanguage = async (req, res) => {
     try {
         const data = req.validatedData;
 
+        // get model based on type
+        const model = getModel(req.sub.userType);
+
         // find the user by id
-        const user = await User.findOne({ _id: req.sub.id, status: "active" });
+        const user = await model.findOne({ _id: req.sub.id, status: "active" });
         if (!user) {
             return res.status(400).send(apiError(400, i18n.__("userNotFound")));
         }
@@ -142,8 +151,11 @@ export const updateLanguage = async (req, res) => {
 // delete current user account
 export const deleteMe = async (req, res) => {
     try {
+        // get model based on type
+        const model = getModel(req.sub.userType);
+
         // find the user
-        const user = await User.findOne({ _id: req.sub.id, status: "active" });
+        const user = await model.findOne({ _id: req.sub.id, status: "active" });
         if (!user) {
             return res.status(400).send(apiError(400, i18n.__("userNotFound")));
         }
