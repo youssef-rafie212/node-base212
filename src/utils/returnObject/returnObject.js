@@ -231,3 +231,17 @@ export const statObj = (title, count) => {
         count,
     };
 };
+
+export const settingsObj = (settings) => {
+    return {
+        linkAndroid: settings.linkAndroid,
+        linkApple: settings.linkApple,
+        phone: settings.phone,
+        email: settings.email,
+        appTitle: settings.appTitle,
+        codeGenerate: settings.codeGenerate,
+        code: settings.code,
+        dashboardSecretToken: settings.dashboardSecretToken,
+        version: settings.version,
+    };
+};

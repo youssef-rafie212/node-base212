@@ -4,7 +4,6 @@ import { apiError, apiResponse, returnObject } from "../../utils/index.js";
 import {
     duplicate,
     userAvatars,
-    validateRole,
     getModel,
     validateCountryExists,
 } from "../../helpers/index.js";

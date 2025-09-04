@@ -9,6 +9,7 @@ import {
     adminRouter,
     userRouter as userDashboardRouter,
     statsRouter,
+    settingsRouter,
 } from "../../routes/dashboard/index.js";
 
 // sets up api and dashboard routes
@@ -24,6 +25,7 @@ export const initializeRoutes = (app) => {
     app.use("/api/v1/dashboard/admins", adminRouter);
     app.use("/api/v1/dashboard/users", userDashboardRouter);
     app.use("/api/v1/dashboard/stats", statsRouter);
+    app.use("/api/v1/dashboard/settings", settingsRouter);
 
     // test route
     app.get("/test", async (req, res) => {});

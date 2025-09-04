@@ -140,4 +140,17 @@ export const allPermissions = [
             },
         ],
     },
+    {
+        id: "4",
+        parent: "/settings",
+        titleEn: "settings",
+        titleAr: "الاعدادات",
+        child: [
+            {
+                titleEn: "update settings",
+                titleAr: "تحديث الاعدادات",
+                route: "/update-settings",
+            },
+        ],
+    },
 ];

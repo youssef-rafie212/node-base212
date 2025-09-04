@@ -79,5 +79,13 @@
     "permissionsRequired": "Permissions are required.",
     "invalidPermissions": "Invalid permissions.",
     "invalidRole": "Invalid role.",
-    "roleRequired": "Role is required."
+    "roleRequired": "Role is required.",
+    "invalidLinkAndroid": "Invalid Android link format",
+    "invalidLinkApple": "Invalid Apple link format",
+    "invalidAppTitleAr": "Invalid Arabic app title",
+    "invalidAppTitleEn": "Invalid English app title",
+    "invalidCodeGenerate": "Invalid value for code generation flag",
+    "invalidCode": "Invalid code format",
+    "invalidDashboardSecretToken": "Invalid dashboard secret token",
+    "invalidVersion": "Invalid version format. Example: 1.0 or 1.0.0"
 }

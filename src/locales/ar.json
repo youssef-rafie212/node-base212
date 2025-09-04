@@ -79,5 +79,13 @@
     "permissionsRequired": "الصلاحيات مطلوبة.",
     "invalidPermissions": "صلاحيات غير صالحة.",
     "invalidRole": "دور غير صالح.",
-    "roleRequired": "الدور مطلوب."
+    "roleRequired": "الدور مطلوب.",
+    "invalidLinkAndroid": "رابط أندرويد غير صالح",
+    "invalidLinkApple": "رابط آبل غير صالح",
+    "invalidAppTitleAr": "عنوان التطبيق بالعربية غير صالح",
+    "invalidAppTitleEn": "عنوان التطبيق بالإنجليزية غير صالح",
+    "invalidCodeGenerate": "قيمة غير صالحة لخاصية توليد الكود",
+    "invalidCode": "الكود غير صالح",
+    "invalidDashboardSecretToken": "رمز الدخول للوحة التحكم غير صالح",
+    "invalidVersion": "إصدار غير صالح. مثال: 1.0 أو 1.0.0"
 }

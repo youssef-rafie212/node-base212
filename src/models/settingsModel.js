@@ -10,8 +10,6 @@ const settingsSchema = new mongoose.Schema(
             ar: { type: String, default: "" },
             en: { type: String, default: "" },
         },
-        logo: { type: String, default: "logo.png" },
-        language: { type: String, enum: ["ar", "en"], default: "ar" },
         codeGenerate: { type: Boolean, enum: [true, false], default: true },
         code: { type: String, default: "" },
         dashboardSecretToken: { type: String, default: "" }, // dashboard secret token to access the dashboard login page
