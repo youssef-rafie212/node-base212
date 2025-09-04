@@ -224,3 +224,10 @@ export const roleObj = (role) => {
         permissions: role.permissions,
     };
 };
+
+export const statObj = (title, count) => {
+    return {
+        title,
+        count,
+    };
+};
