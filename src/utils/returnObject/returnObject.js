@@ -29,7 +29,8 @@ export const userObj = (user) => {
         gender: user.gender,
         language: user.language,
         dataCompleted: user.dataCompleted,
-        country: countryObj(user.country),
+        isVerified: user.isVerified,
+        country: user.country ? countryObj(user.country) : null,
     };
 };
 

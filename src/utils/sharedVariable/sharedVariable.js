@@ -66,6 +66,44 @@ export const allPermissions = [
     },
     {
         id: "2",
+        parent: "/users",
+        titleEn: "users",
+        titleAr: "المستخدمين",
+        child: [
+            {
+                titleEn: "create user",
+                titleAr: "اضافة مستخدم",
+                route: "/create-new-user",
+            },
+            {
+                titleEn: "get all users",
+                titleAr: "عرض جميع المستخدمين",
+                route: "/get-all-users",
+            },
+            {
+                titleEn: "get user",
+                titleAr: "عرض مستخدم",
+                route: "/get-user",
+            },
+            {
+                titleEn: "update user",
+                titleAr: "تحديث مستخدم",
+                route: "/update-user",
+            },
+            {
+                titleEn: "delete user",
+                titleAr: "حذف مستخدم",
+                route: "/delete-user",
+            },
+            {
+                titleEn: "block/unblock user",
+                titleAr: "حظر/تفعيل مستخدم",
+                route: "/toggle-block-user",
+            },
+        ],
+    },
+    {
+        id: "3",
         parent: "/admins",
         titleEn: "admins",
         titleAr: "المشرفين",
@@ -88,7 +126,7 @@ export const allPermissions = [
             {
                 titleEn: "update admin",
                 titleAr: "تحديث مشرف",
-                route: "/get-admin",
+                route: "/update-admin",
             },
             {
                 titleEn: "delete admin",
