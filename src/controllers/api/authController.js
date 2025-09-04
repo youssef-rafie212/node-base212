@@ -1,11 +1,7 @@
 import i18n from "i18n";
 import admin from "firebase-admin";
 
-import {
-    apiError,
-    apiResponse,
-    returnObject,
-} from "../../utils/index.js";
+import { apiError, apiResponse, returnObject } from "../../utils/index.js";
 import {
     getModel,
     duplicate,
@@ -61,7 +57,7 @@ export const signUp = async (req, res) => {
         }
 
         // handle avatar upload if it exists in the request
-        const id = await userAvatars.uploadAvatar(req, data);
+        const id = await userAvatars.uploadAvatar(req, "users", data);
 
         // set dataCompleted as true (no complete data step)
         data.dataCompleted = true;
@@ -383,7 +379,7 @@ export const completeData = async (req, res) => {
         }
 
         // handle avatar upload if it exists in the request
-        await userAvatars.uploadAvatar(req, data, user._id);
+        await userAvatars.uploadAvatar(req, "users", data, user._id);
 
         // set dataCompleted as true
         data.dataCompleted = true;

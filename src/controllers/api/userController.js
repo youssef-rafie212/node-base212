@@ -100,6 +100,7 @@ export const updateMe = async (req, res) => {
         // handle avatar upload if it exists in the request
         await userAvatars.uploadAvatar(
             req,
+            "users",
             data,
             true,
             req.sub.id,

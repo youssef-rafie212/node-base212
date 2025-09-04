@@ -14,7 +14,7 @@ export const removeFile = (name, type, otherLink) => {
         name !== "female.png" &&
         name !== "default.png"
     ) {
-        if (type === "users") {
+        if (type === "users" || type === "supervisors") {
             fs.unlink(
                 path.join(
                     __dirname,

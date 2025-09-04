@@ -64,4 +64,42 @@ export const allPermissions = [
             },
         ],
     },
+    {
+        id: "2",
+        parent: "/admins",
+        titleEn: "admins",
+        titleAr: "المشرفين",
+        child: [
+            {
+                titleEn: "create admin",
+                titleAr: "اضافة مشرف",
+                route: "/create-new-admin",
+            },
+            {
+                titleEn: "get all admins",
+                titleAr: "عرض جميع المشرفين",
+                route: "/get-all-admins",
+            },
+            {
+                titleEn: "get admin",
+                titleAr: "عرض مشرف",
+                route: "/get-admin",
+            },
+            {
+                titleEn: "update admin",
+                titleAr: "تحديث مشرف",
+                route: "/get-admin",
+            },
+            {
+                titleEn: "delete admin",
+                titleAr: "حذف مشرف",
+                route: "/delete-admin",
+            },
+            {
+                titleEn: "block/unblock admin",
+                titleAr: "حظر/تفعيل مشرف",
+                route: "/toggle-block-admin",
+            },
+        ],
+    },
 ];

@@ -11,7 +11,6 @@ router.get("/get-csrf-token", authController.getCsrfToken);
 
 router.post(
     "/sign-in",
-    doubleCsrfProtection,
     authValidation.validateAdminSignIn,
     validateRequest,
     authController.adminSignIn

@@ -77,5 +77,7 @@
     "documentDeleted": "Document deleted successfully.",
     "cantModifyAdminRole": "Cannot modify admin role.",
     "permissionsRequired": "Permissions are required.",
-    "invalidPermissions": "Invalid permissions."
+    "invalidPermissions": "Invalid permissions.",
+    "invalidRole": "Invalid role.",
+    "roleRequired": "Role is required."
 }

@@ -15,3 +15,4 @@ export * as fileUpload from "./fileUpload/fileUpload.js";
 export * as generateCode from "./generateCode/generateCode.js";
 export * as returnObject from "./returnObject/returnObject.js";
 export * as sharedVariable from "./sharedVariable/sharedVariable.js";
+export { initializeRoutes } from "./initializeRoutes/initializeRoutes.js";

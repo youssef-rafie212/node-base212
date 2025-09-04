@@ -77,5 +77,7 @@
     "documentDeleted": "تم حذف المستند بنجاح.",
     "cantModifyAdminRole": "لا يمكن تعديل دور الادمن",
     "permissionsRequired": "الصلاحيات مطلوبة.",
-    "invalidPermissions": "صلاحيات غير صالحة."
+    "invalidPermissions": "صلاحيات غير صالحة.",
+    "invalidRole": "دور غير صالح.",
+    "roleRequired": "الدور مطلوب."
 }

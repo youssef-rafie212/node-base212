@@ -11,12 +11,11 @@ import mongoSanitize from "express-mongo-sanitize";
 import { fileURLToPath } from "url";
 import path, { dirname } from "path";
 
-import { globalErrorHandler, apiError } from "./utils/index.js";
-import { authRouter, userRouter, chatRoomRouter } from "./routes/api/index.js";
 import {
-    authRouter as authDashboardRouter,
-    roleRouter,
-} from "./routes/dashboard/index.js";
+    globalErrorHandler,
+    apiError,
+    initializeRoutes,
+} from "./utils/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -141,18 +140,8 @@ app.get("/robots.txt", (req, res) => {
     res.send("User-agent: *\nDisallow: /");
 });
 
-// api routes
-app.use("/api/v1/auth", authRouter);
-app.use("/api/v1/users", userRouter);
-app.use("/api/v1/chat-rooms", chatRoomRouter);
-
-// dashboard routes
-app.use("/api/v1/dashboard/auth", authDashboardRouter);
-app.use("/api/v1/dashboard/users", userRouter);
-app.use("/api/v1/dashboard/roles", roleRouter);
-
-// test route
-app.get("/test", async (req, res) => {});
+// initialize routes
+initializeRoutes(app);
 
 // fallback route (404)
 app.use((req, res) => {

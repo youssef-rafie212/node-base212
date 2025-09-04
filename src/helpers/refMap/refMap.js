@@ -2,14 +2,14 @@
 const getRef = (userType) => {
     if (!userType) return null;
 
-    const modelMap = {
+    const refMap = {
         user: "User",
         admin: "Admin",
     };
 
-    const model = modelMap[userType.toLowerCase()];
+    const ref = refMap[userType.toLowerCase()];
 
-    return model;
+    return ref;
 };
 
 export default getRef;
