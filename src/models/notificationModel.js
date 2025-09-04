@@ -14,7 +14,7 @@ let notificationSchema = new mongoose.Schema(
         },
         notifyRef: {
             type: String,
-            enum: ["User"],
+            enum: ["User", "Admin"],
             required: true,
         },
         content: { type: String, default: "" },

@@ -4,3 +4,4 @@ export { default as adminRouter } from "./adminRoutes.js";
 export { default as userRouter } from "./userRoutes.js";
 export { default as statsRouter } from "./statsRoutes.js";
 export { default as settingsRouter } from "./settingsRoutes.js";
+export { default as notificationRouter } from "./notificationRoutes.js";

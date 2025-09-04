@@ -87,5 +87,8 @@
     "invalidCodeGenerate": "Invalid value for code generation flag",
     "invalidCode": "Invalid code format",
     "invalidDashboardSecretToken": "Invalid dashboard secret token",
-    "invalidVersion": "Invalid version format. Example: 1.0 or 1.0.0"
+    "invalidVersion": "Invalid version format. Example: 1.0 or 1.0.0",
+    "notificationSent": "Notification sent successfully.",
+    "titleRequired": "Title is required.",
+    "messageRequired": "Message is required."
 }

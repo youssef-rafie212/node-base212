@@ -153,4 +153,22 @@ export const allPermissions = [
             },
         ],
     },
+    {
+        id: "5",
+        parent: "/notifications",
+        titleEn: "notifications",
+        titleAr: "الاشعارات",
+        child: [
+            {
+                titleEn: "send single notification",
+                titleAr: "ارسال اشعار واحد",
+                route: "/send-single-notification",
+            },
+            {
+                titleEn: "send all notification",
+                titleAr: "ارسال اشعار جماعي",
+                route: "/send-all-notification",
+            },
+        ],
+    },
 ];

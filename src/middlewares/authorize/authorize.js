@@ -19,17 +19,9 @@ const authorize = async (req, res, next) => {
         // get the current request URL, ignoring query parameters
         const urlWithoutQueryParams = req.url.split("?")[0];
 
-        // segment the URL
-        const urlSegments = urlWithoutQueryParams.split("/");
-
-        // sanitize the URL
-        const sanitizedUrl = urlSegments
-            .map((segment) => (segment.length === 24 ? ":id" : segment)) // Replace MongoDB ObjectIds
-            .join("/");
-
         // check if the admin has permission for the requested URL
-        if (!adminPermissions.includes(sanitizedUrl)) {
-            console.log(`admin has no permission for ${sanitizedUrl}`);
+        if (!adminPermissions.includes(urlWithoutQueryParams)) {
+            console.log(`admin has no permission for ${urlWithoutQueryParams}`);
             return res.status(403).send(apiError(403, i18n.__("forbidden")));
         }
 

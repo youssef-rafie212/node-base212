@@ -87,5 +87,8 @@
     "invalidCodeGenerate": "قيمة غير صالحة لخاصية توليد الكود",
     "invalidCode": "الكود غير صالح",
     "invalidDashboardSecretToken": "رمز الدخول للوحة التحكم غير صالح",
-    "invalidVersion": "إصدار غير صالح. مثال: 1.0 أو 1.0.0"
+    "invalidVersion": "إصدار غير صالح. مثال: 1.0 أو 1.0.0",
+    "notificationSent": "تم ارسال الاشعار بنجاح.",
+    "titleRequired": "العنوان مطلوب.",
+    "messageRequired": "الرسالة مطلوبة."
 }
