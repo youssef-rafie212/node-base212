@@ -107,6 +107,13 @@ export const updateRoleName = async (req, res) => {
                 .send(apiError(400, i18n.__("documentNotFound")));
         }
 
+        // dont allow updating admin role
+        if (role.isAdmin) {
+            return res
+                .status(400)
+                .send(apiError(400, i18n.__("cantModifyAdminRole")));
+        }
+
         // check for duplicate role name (both en and ar)
         const nameExists = await duplicateArEnName(Role, data.name, data.id);
         if (nameExists) {
