@@ -19,6 +19,7 @@ export const validateSignUp = [
         .withMessage(() => i18n.__("invalidType")),
 
     body("email")
+        .optional()
         .trim()
         .notEmpty()
         .withMessage(() => i18n.__("emailRequired"))
@@ -26,11 +27,26 @@ export const validateSignUp = [
         .withMessage(() => i18n.__("invalidEmail")),
 
     body("phone")
+        .optional()
         .trim()
         .notEmpty()
         .withMessage(() => i18n.__("phoneRequired"))
         .isMobilePhone("any")
-        .withMessage(() => i18n.__("invalidPhone")),
+        .withMessage(() => i18n.__("invalidPhone"))
+        .custom((value, { req }) => {
+            if (!value.startsWith("+")) {
+                throw i18n.__("invalidPhone");
+            }
+            return true;
+        }),
+
+    // make sure ate least email or phone is provided
+    check().custom((value, { req }) => {
+        if (!req.body.email && !req.body.phone) {
+            throw i18n.__("emailOrPhoneRequired");
+        }
+        return true;
+    }),
 
     body("password")
         .trim()
@@ -126,20 +142,61 @@ export const validateRequestOtpPhone = [
         .withMessage(() => i18n.__("invalidPhone")),
 ];
 
-export const validateLocalSignIn = [
-    body("type")
+export const validateRequestOtp = [
+    body("identifier")
         .trim()
         .notEmpty()
-        .withMessage(() => i18n.__("typeRequired"))
-        .isIn(["user"])
-        .withMessage(() => i18n.__("invalidType")),
+        .withMessage(() => i18n.__("identifierRequired"))
+        .isString()
+        .withMessage(() => i18n.__("invalidIdentifier")),
+];
 
+export const validateVerifyOtp = [
+    body("identifier")
+        .trim()
+        .notEmpty()
+        .withMessage(() => i18n.__("identifierRequired"))
+        .isString()
+        .withMessage(() => i18n.__("invalidIdentifier")),
+
+    body("otp")
+        .trim()
+        .notEmpty()
+        .withMessage(() => i18n.__("otpRequired"))
+        .isLength({ min: 6, max: 6 })
+        .withMessage(() => i18n.__("invalidOtp")),
+];
+
+export const validateLocalSignIn = [
     body("email")
+        .optional()
         .trim()
         .notEmpty()
         .withMessage(() => i18n.__("emailRequired"))
         .isEmail()
         .withMessage(() => i18n.__("invalidEmail")),
+
+    body("phone")
+        .optional()
+        .trim()
+        .notEmpty()
+        .withMessage(() => i18n.__("phoneRequired"))
+        .isMobilePhone("any")
+        .withMessage(() => i18n.__("invalidPhone"))
+        .custom((value, { req }) => {
+            if (!value.startsWith("+")) {
+                throw i18n.__("invalidPhone");
+            }
+            return true;
+        }),
+
+    // make sure ate least email or phone is provided
+    check().custom((value, { req }) => {
+        if (!req.body.email && !req.body.phone) {
+            throw i18n.__("emailOrPhoneRequired");
+        }
+        return true;
+    }),
 
     body("password")
         .trim()
@@ -211,20 +268,13 @@ export const validateCompleteData = [
     // other fields ...
 ];
 
-export const validateResetPasswordEmail = [
-    body("type")
+export const validateResetPassword = [
+    body("identifier")
         .trim()
         .notEmpty()
-        .withMessage(() => i18n.__("typeRequired"))
-        .isIn(["user"])
-        .withMessage(() => i18n.__("invalidType")),
-
-    body("email")
-        .trim()
-        .notEmpty()
-        .withMessage(() => i18n.__("emailRequired"))
-        .isEmail()
-        .withMessage(() => i18n.__("invalidEmail")),
+        .withMessage(() => i18n.__("identifierRequired"))
+        .isString()
+        .withMessage(() => i18n.__("invalidIdentifier")),
 
     body("password")
         .trim()
@@ -242,53 +292,6 @@ export const validateResetPasswordEmail = [
             }
             return true;
         }),
-
-    body("otp")
-        .trim()
-        .notEmpty()
-        .withMessage(() => i18n.__("otpRequired"))
-        .isLength({ min: 6, max: 6 })
-        .withMessage(() => i18n.__("invalidOtp")),
-];
-
-export const validateResetPasswordPhone = [
-    body("type")
-        .trim()
-        .notEmpty()
-        .withMessage(() => i18n.__("typeRequired"))
-        .isIn(["user"])
-        .withMessage(() => i18n.__("invalidType")),
-
-    body("phone")
-        .trim()
-        .notEmpty()
-        .withMessage(() => i18n.__("phoneRequired"))
-        .isMobilePhone("any")
-        .withMessage(() => i18n.__("invalidPhone")),
-
-    body("password")
-        .trim()
-        .notEmpty()
-        .withMessage(() => i18n.__("passwordRequired"))
-        .isLength({ min: 6 })
-        .withMessage(() => i18n.__("passwordTooShort")),
-
-    body("passwordConfirm")
-        .notEmpty()
-        .withMessage(() => i18n.__("passwordConfirmRequired"))
-        .custom((value, { req }) => {
-            if (value !== req.body.password) {
-                throw i18n.__("passwordsDoNotMatch");
-            }
-            return true;
-        }),
-
-    body("otp")
-        .trim()
-        .notEmpty()
-        .withMessage(() => i18n.__("otpRequired"))
-        .isLength({ min: 6, max: 6 })
-        .withMessage(() => i18n.__("invalidOtp")),
 ];
 
 export const validateSocialSignIn = [

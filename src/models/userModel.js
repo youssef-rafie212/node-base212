@@ -35,6 +35,11 @@ const userSchema = new mongoose.Schema(
         notifyCount: { type: Number, default: 0 },
         isVerified: { type: Boolean, default: false },
         dataCompleted: { type: Boolean, default: false },
+        expireAt: {
+            type: Date,
+            expires: 0,
+        },
+        canReset: { type: Boolean, default: false },
     },
     { timestamps: true }
 );

@@ -90,5 +90,16 @@
     "invalidVersion": "Invalid version format. Example: 1.0 or 1.0.0",
     "notificationSent": "Notification sent successfully.",
     "titleRequired": "Title is required.",
-    "messageRequired": "Message is required."
+    "messageRequired": "Message is required.",
+    "emailOrPhoneRequired": "Email or phone number is required.",
+    "identifierRequired": "Identifier is required.",
+    "dataNotCompleted": "User data is not completed.",
+    "accountNotVerified": "Account is not verified.",
+    "accountBlocked": "Account is blocked.",
+    "invalidCredentialsPhone": "Invalid phone number or password.",
+    "invalidCredentialsEmail": "Invalid email or password.",
+    "otpVerified": "OTP verified successfully.",
+    "invalidIdentifier": "Invalid identifier.",
+    "invalidOldPassword": "Invalid old password.",
+    "passwordUpdated": "Password updated successfully."
 }

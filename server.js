@@ -8,6 +8,7 @@ import {
     initializeRedis,
     initializeFirebase,
     socketManager,
+    initializeJobs,
 } from "./src/services/index.js";
 
 dotenv.config();
@@ -19,6 +20,9 @@ mongoose
     .connect(process.env.DB_URI || "mongodb://localhost:27017/base")
     .then(() => {
         console.log("MongoDB connected");
+
+        // initialize cron jobs
+        initializeJobs();
     })
     .catch((err) => {
         console.error("MongoDB connection error:", err);

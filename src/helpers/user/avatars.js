@@ -10,7 +10,7 @@ export const uploadAvatar = async (
     oldAvatarName = null
 ) => {
     // generate a new id if not provided
-    const id = isUpdate ? updateId : initId();
+    const id = updateId ? updateId : initId();
 
     // check if the file is provided first
     if (req.files?.avatar) {

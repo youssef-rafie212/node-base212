@@ -21,3 +21,14 @@ export const addUserDevice = async (
 export const deleteAllUserDevices = async (userId) => {
     await Device.deleteMany({ user: userId });
 };
+
+// deletes all user devices except current one
+export const deleteAllUserDevicesExceptCurrent = async (
+    userId,
+    currentDeviceFcmToken
+) => {
+    await Device.deleteMany({
+        user: userId,
+        fcmToken: { $ne: currentDeviceFcmToken },
+    });
+};

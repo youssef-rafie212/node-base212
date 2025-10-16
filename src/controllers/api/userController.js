@@ -37,6 +37,54 @@ export const me = async (req, res) => {
     }
 };
 
+// update user password
+export const updatePassword = async (req, res) => {
+    try {
+        const data = req.validatedData;
+
+        // get model based on type
+        const model = getModel(req.sub.userType);
+
+        const user = await model.findOne({
+            _id: req.sub.id,
+            status: "active",
+            isVerified: true,
+            dataCompleted: true,
+        });
+
+        if (!user) {
+            return res.status(400).send(apiError(400, i18n.__("userNotFound")));
+        }
+
+        // check if old password is correct
+        const isPasswordMatch = await user.comparePassword(data.oldPassword);
+
+        if (!isPasswordMatch) {
+            return res
+                .status(400)
+                .send(apiError(400, i18n.__("invalidOldPassword")));
+        }
+
+        // update password
+        user.password = data.newPassword;
+        await user.save();
+
+        // delete other user tokens to force re-authentication
+        await tokens.deleteAllUserTokensExceptCurrent(
+            user.id,
+            req.headers.authorization.split(" ")[1]
+        );
+
+        // delete other user devices
+        await devices.deleteAllUserDevices(user.id);
+
+        res.send(apiResponse(200, i18n.__("passwordUpdated"), {}));
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
+    }
+};
+
 // update current user information
 export const updateMe = async (req, res) => {
     try {
@@ -106,6 +154,9 @@ export const updateMe = async (req, res) => {
             req.sub.id,
             user.avatar
         );
+
+        // dont allow updating password here
+        if (data.password) delete data.password;
 
         // update user data
         Object.assign(user, data);

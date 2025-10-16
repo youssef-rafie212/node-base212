@@ -4,5 +4,6 @@ export { default as sendSMS } from "./sendSMS/sendSMS.js";
 export { initializeFirebase } from "./firebase/firebaseManager.js";
 export { handleNotification } from "./notification/pushNotification.js";
 export { initializeRedis } from "./redis/redisManager.js";
+export { initializeJobs } from "./initializeJobs/initializeJobs.js";
 export * as paymobService from "./paymob/paymob.js";
 export * as socketManager from "./socket/socketManager.js";

@@ -62,6 +62,8 @@ export const signUp = async (req, res) => {
         // set dataCompleted as true (no complete data step)
         data.dataCompleted = true;
 
+        data.expireAt = new Date(Date.now() + 60 * 60 * 1000);
+
         // generate user token and store user device
         const token = await afterAuth(
             id,
@@ -162,6 +164,85 @@ export const requestOtpPhone = async (req, res) => {
     }
 };
 
+// request otp for phone or email
+export const requestOtp = async (req, res) => {
+    try {
+        const data = req.validatedData;
+
+        // get model based on type
+        const model = getModel(data.type);
+
+        // detect (email / phone) ---
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const phoneRegex = /^\+?[0-9]{7,15}$/;
+
+        let user = null;
+        let otp = null;
+
+        if (emailRegex.test(data.identifier)) {
+            // handle email
+            user = await model.findOne({
+                email: data.identifier,
+                status: "active",
+            });
+            if (!user) {
+                return res
+                    .status(400)
+                    .send(apiError(400, i18n.__("userNotFound")));
+            }
+
+            otp = await sendVerification.sendVerificationByEmail(
+                user.email,
+                "otpSentEmail",
+                "otpSentEmailText",
+                "otpSentEmailHtml"
+            );
+
+            otps.setOtp(user, otp);
+            await user.save();
+
+            return res.send(
+                apiResponse(200, i18n.__("otpSent"), { email: user.email })
+            );
+        } else if (phoneRegex.test(data.identifier)) {
+            // handle phone otp
+            user = await model.findOne({
+                phone: data.identifier,
+                status: "active",
+            });
+            if (!user) {
+                return res
+                    .status(400)
+                    .send(apiError(400, i18n.__("userNotFound")));
+            }
+
+            const { otp: smsOtp, smsResponse } =
+                await sendVerification.sendVerificationBySMS(user.phone);
+
+            if (!smsResponse) {
+                return res
+                    .status(500)
+                    .send(apiError(500, i18n.__("smsNotSent")));
+            }
+
+            otps.setOtp(user, smsOtp);
+            await user.save();
+
+            return res.send(
+                apiResponse(200, i18n.__("otpSent"), { phone: user.phone })
+            );
+        } else {
+            // invalid input
+            return res
+                .status(400)
+                .send(apiError(400, i18n.__("invalidIdentifier")));
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
+    }
+};
+
 // local sign in
 export const localSignIn = async (req, res) => {
     try {
@@ -170,16 +251,34 @@ export const localSignIn = async (req, res) => {
         // get model based on type
         const model = getModel(data.type);
 
-        // find user by email
-        const user = await model.findOne({
-            email: data.email,
-            status: "active",
-            isVerified: true, // make sure the user is verified
-        });
+        // find user by email or phone
+        let user = null;
+
+        if (data.email) {
+            user = await model.findOne({
+                email: data.email,
+                status: "active",
+            });
+        } else if (data.phone) {
+            user = await model.findOne({
+                phone: data.phone,
+                status: "active",
+            });
+        }
+
         if (!user) {
             return res
                 .status(401)
-                .send(apiError(401, i18n.__("invalidCredentials")));
+                .send(
+                    apiError(
+                        401,
+                        i18n.__(
+                            data.email
+                                ? "invalidCredentialsEmail"
+                                : "invalidCredentialsPhone"
+                        )
+                    )
+                );
         }
 
         // check password
@@ -187,13 +286,43 @@ export const localSignIn = async (req, res) => {
         if (!isMatch) {
             return res
                 .status(401)
-                .send(apiError(401, i18n.__("invalidCredentials")));
+                .send(
+                    apiError(
+                        401,
+                        i18n.__(
+                            data.email
+                                ? "invalidCredentialsEmail"
+                                : "invalidCredentialsPhone"
+                        )
+                    )
+                );
+        }
+
+        // check if user is blocked
+        if (user.status === "blocked") {
+            return res
+                .status(401)
+                .send(apiError(401, i18n.__("accountBlocked")));
+        }
+
+        // check if user is not verified
+        if (!user.isVerified) {
+            return res
+                .status(401)
+                .send(apiError(401, i18n.__("accountNotVerified")));
+        }
+
+        // check if user complelted data
+        if (!user.dataCompleted) {
+            return res
+                .status(401)
+                .send(apiError(401, i18n.__("dataNotCompleted")));
         }
 
         // generate token
         const token = await afterAuth(
             user._id,
-            user.type,
+            "user",
             data.fcmToken,
             data.deviceType
         );
@@ -297,6 +426,8 @@ export const verifyEmail = async (req, res) => {
         user.isVerified = true;
         await user.save();
 
+        await model.updateOne({ _id: user._id }, { $unset: { expireAt: "" } });
+
         res.send(
             apiResponse(200, i18n.__("userVerified"), { userId: user._id })
         );
@@ -340,6 +471,8 @@ export const verifyPhone = async (req, res) => {
         otps.resetOtp(user); // reset otp
         user.isVerified = true;
         await user.save();
+
+        await model.updateOne({ _id: user._id }, { $unset: { expireAt: "" } });
 
         res.send(
             apiResponse(200, i18n.__("userVerified"), { userId: user._id })
@@ -416,35 +549,58 @@ export const signOut = async (req, res) => {
     }
 };
 
-// reset password using email and otp
-export const resetPasswordEmail = async (req, res) => {
+// reset password using email or phone and otp
+export const resetPassword = async (req, res) => {
     try {
         const data = req.validatedData;
 
         // get model based on type
         const model = getModel(data.type);
 
-        // find user by email
-        const user = await model.findOne({
-            email: data.email,
-            status: "active",
-            isVerified: true,
-        });
-        if (!user) {
-            return res.status(400).send(apiError(400, i18n.__("userNotFound")));
-        }
+        // detect (email / phone) ---
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const phoneRegex = /^\+?[0-9]{7,15}$/;
 
-        // verify the otp
-        const validOtp = otps.isOtpValid(user, data.otp);
-        if (!validOtp) {
-            return res.status(400).send(apiError(400, i18n.__("invalidOtp")));
-        }
+        let user = null;
 
-        // reset the otp for user
-        otps.resetOtp(user);
+        if (emailRegex.test(data.identifier)) {
+            // handle email
+            user = await model.findOne({
+                email: data.identifier,
+                status: "active",
+                isVerified: true,
+                dataCompleted: true,
+                canReset: true,
+            });
+            if (!user) {
+                return res
+                    .status(400)
+                    .send(apiError(400, i18n.__("userNotFound")));
+            }
+        } else if (phoneRegex.test(data.identifier)) {
+            // handle phone
+            user = await model.findOne({
+                phone: data.identifier,
+                status: "active",
+                isVerified: true,
+                dataCompleted: true,
+                canReset: true,
+            });
+            if (!user) {
+                return res
+                    .status(400)
+                    .send(apiError(400, i18n.__("userNotFound")));
+            }
+        } else {
+            // invalid input
+            return res
+                .status(400)
+                .send(apiError(400, i18n.__("invalidIdentifier")));
+        }
 
         // update the user's password
         user.password = data.password;
+        user.canReset = false;
         await user.save();
 
         // delete user tokens to force re-authentication
@@ -460,44 +616,63 @@ export const resetPasswordEmail = async (req, res) => {
     }
 };
 
-// reset password using phone and otp
-export const resetPasswordPhone = async (req, res) => {
+export const verifyResetOtp = async (req, res) => {
     try {
         const data = req.validatedData;
 
         // get model based on type
         const model = getModel(data.type);
 
-        // find user by phone
-        const user = await model.findOne({
-            phone: data.phone,
-            status: "active",
-            isVerified: true,
-        });
-        if (!user) {
-            return res.status(400).send(apiError(400, i18n.__("userNotFound")));
+        // detect (email / phone) ---
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const phoneRegex = /^\+?[0-9]{7,15}$/;
+
+        let user = null;
+
+        if (emailRegex.test(data.identifier)) {
+            // handle email
+            user = await model.findOne({
+                email: data.identifier,
+                status: "active",
+                isVerified: true,
+                dataCompleted: true,
+            });
+            if (!user) {
+                return res
+                    .status(400)
+                    .send(apiError(400, i18n.__("userNotFound")));
+            }
+        } else if (phoneRegex.test(data.identifier)) {
+            // handle phone
+            user = await model.findOne({
+                phone: data.identifier,
+                status: "active",
+                isVerified: true,
+                dataCompleted: true,
+            });
+            if (!user) {
+                return res
+                    .status(400)
+                    .send(apiError(400, i18n.__("userNotFound")));
+            }
+        } else {
+            // invalid input
+            return res
+                .status(400)
+                .send(apiError(400, i18n.__("invalidIdentifier")));
         }
 
-        // verify the otp
+        // validate the otp
         const validOtp = otps.isOtpValid(user, data.otp);
         if (!validOtp) {
             return res.status(400).send(apiError(400, i18n.__("invalidOtp")));
         }
 
-        // reset the otp for user
-        otps.resetOtp(user);
-
-        // update the user's password
-        user.password = data.password;
+        otps.resetOtp(user); // reset otp
+        user.canReset = true;
         await user.save();
 
-        // delete user tokens to force re-authentication
-        await tokens.deleteAllUserTokens(user.id);
-
-        // delete user devices
-        await devices.deleteAllUserDevices(user.id);
-
-        res.send(apiResponse(200, i18n.__("passwordResetSuccessfully")));
+        res.send(apiResponse(200, i18n.__("otpVerified")), {});
     } catch (error) {
         console.log(error);
         res.status(500).send(apiError(500, i18n.__("returnDeveloper")));

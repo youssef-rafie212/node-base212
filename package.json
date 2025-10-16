@@ -15,6 +15,7 @@
         "bcryptjs": "^2.4.3",
         "body-parser": "^1.20.3",
         "buffer": "^6.0.3",
+        "chalk": "^5.6.2",
         "compression": "^1.8.1",
         "connect-flash": "^0.1.1",
         "connect-mongo": "^5.1.0",

@@ -16,6 +16,7 @@ import {
     apiError,
     initializeRoutes,
 } from "./utils/index.js";
+import { loggerMiddleware } from "./middlewares/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -57,18 +58,7 @@ app.use(express.static(path.join(__dirname, "..", "public")));
 app.use(cookieParser());
 
 // logging middleware
-app.use((req, res, next) => {
-    res.on("finish", () => {
-        // change color of status code based on value
-        const statusColor = res.statusCode < 400 ? "\x1b[32m" : "\x1b[31m";
-        console.log(
-            `${new Date().toISOString()} ${statusColor}${
-                res.statusCode
-            }\x1b[0m ${req.method} ${req.originalUrl}`
-        );
-    });
-    next();
-});
+app.use(loggerMiddleware);
 
 // cors configuration
 app.use(

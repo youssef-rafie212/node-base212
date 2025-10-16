@@ -21,6 +21,13 @@ router.post(
 );
 
 router.post(
+    "/request-otp",
+    authValidation.validateRequestOtp,
+    validateRequest,
+    authController.requestOtp
+);
+
+router.post(
     "/request-otp-email",
     authValidation.validateRequestOtpEmail,
     validateRequest,
@@ -49,17 +56,10 @@ router.post(
 );
 
 router.post(
-    "/reset-password-email",
-    authValidation.validateResetPasswordEmail,
+    "/reset-password",
+    authValidation.validateResetPassword,
     validateRequest,
-    authController.resetPasswordEmail
-);
-
-router.post(
-    "/reset-password-phone",
-    authValidation.validateResetPasswordPhone,
-    validateRequest,
-    authController.resetPasswordPhone
+    authController.resetPassword
 );
 
 router.post(
@@ -75,6 +75,13 @@ router.post(
     authValidation.validateCompleteData,
     validateRequest,
     authController.completeData
+);
+
+router.post(
+    "/verify-reset-otp",
+    authValidation.validateVerifyOtp,
+    validateRequest,
+    authController.verifyResetOtp
 );
 
 router.post("/sign-out", authenticate, authController.signOut);

@@ -23,3 +23,11 @@ export const newToken = async (userId, userType) => {
 export const deleteAllUserTokens = async (userId) => {
     await UserToken.deleteMany({ user: userId });
 };
+
+// delete all user tokens exept the current one
+export const deleteAllUserTokensExceptCurrent = async (
+    userId,
+    currentToken
+) => {
+    await UserToken.deleteMany({ user: userId, token: { $ne: currentToken } });
+};
