@@ -51,39 +51,15 @@ export const countryObj = (country) => {
     };
 };
 
-export const notifyObj = (
-    objUser,
-    objSetting,
-    objMessage,
-    objTitle,
-    key,
-    lang,
-    data
-) => {
-    return {
-        user: objUser.userId,
-        notify: objUser.notifyId,
-        userRef: objUser.userRef,
-        notifyRef: objUser.notifyRef,
-        message: objMessage,
-        title: objTitle,
-        key,
-        data: data || {}, // store any additional data
-    };
-};
-
 export const sendNotifyObj = (
     deviceToken,
-    objSetting,
-    objMessage,
     objTitle,
+    objMessage,
     key,
-    counter,
+    data,
     lang = "ar",
-    data
+    counter
 ) => {
-    i18n.setLocale(lang); // set the appropriate language
-
     // sanitize and convert all `data` values to strings
     const sanitizedData = {};
     Object.entries(data || {}).forEach(([k, v]) => {
@@ -98,18 +74,9 @@ export const sendNotifyObj = (
         }
     });
 
-    // attach any additional data to the notification
-    const attach = {
-        name: sanitizedData.name,
-    };
+    const title = objTitle[lang];
 
-    const title =
-        key === "admin" ? `${objTitle[lang]}` : objSetting.title[lang];
-
-    const body =
-        key === "admin"
-            ? `${objMessage[lang]}`
-            : i18n.__(objMessage[lang], attach);
+    const body = objMessage[lang];
 
     return {
         // displayed notification content
@@ -125,7 +92,7 @@ export const sendNotifyObj = (
         data: {
             key,
             sound: "default",
-            badge: String(counter || 1), // firebase requires strings for badge
+            badge: String(counter || 1), // ensure badge is a string
             ...sanitizedData, // spread the sanitized data directly
         },
     };
