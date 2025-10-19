@@ -25,25 +25,17 @@ export const sendSingleNotification = async (req, res) => {
         }
 
         // prepare notification data
-        const userObj = {
-            userId: user._id,
-            userRef: getRef(data.type),
-            notifyId: req.admin.id,
-            notifyRef: "Admin",
-        };
-
         const titleObj = { ar: data.title.ar, en: data.title.en };
         const messageObj = { ar: data.message.ar, en: data.message.en };
 
         // send notification
         await handleNotification(
-            userObj,
-            messageObj,
+            user,
             titleObj,
+            messageObj,
             "admin",
-            user.notifyCount + 1,
-            user.language || "ar",
-            data.data
+            {},
+            user.notifyCount + 1
         );
 
         res.send(apiResponse(200, i18n.__("notificationSent"), {}));
@@ -65,29 +57,23 @@ export const sendAllNotification = async (req, res) => {
             status: { $ne: "deleted" },
         });
 
-        users.forEach(async (user) => {
-            // prepare notification data
-            const userObj = {
-                userId: user._id,
-                userRef: getRef(data.type),
-                notifyId: req.admin.id,
-                notifyRef: "Admin",
-            };
+        await Promise.all(
+            users.map((user) => {
+                // prepare notification data
+                const titleObj = { ar: data.title.ar, en: data.title.en };
+                const messageObj = { ar: data.message.ar, en: data.message.en };
 
-            const titleObj = { ar: data.title.ar, en: data.title.en };
-            const messageObj = { ar: data.message.ar, en: data.message.en };
-
-            // send notification
-            await handleNotification(
-                userObj,
-                messageObj,
-                titleObj,
-                "admin",
-                user.notifyCount + 1,
-                user.language || "ar",
-                data.data
-            );
-        });
+                // send notification
+                return handleNotification(
+                    user,
+                    titleObj,
+                    messageObj,
+                    "admin",
+                    {},
+                    user.notifyCount + 1
+                );
+            })
+        );
 
         res.send(apiResponse(200, i18n.__("notificationSent"), {}));
     } catch (error) {

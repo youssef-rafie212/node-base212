@@ -10,7 +10,6 @@ import {
     Country,
     Role,
     Device,
-    Notification,
 } from "../../models/index.js";
 
 export const getStats = async (req, res) => {
@@ -23,7 +22,6 @@ export const getStats = async (req, res) => {
             countryCount,
             roleCount,
             deviceCount,
-            notificationCount,
         ] = await Promise.all([
             Admin.countDocuments({ status: { $ne: "deleted" } }),
             User.countDocuments({ status: { $ne: "deleted" } }),
@@ -32,7 +30,6 @@ export const getStats = async (req, res) => {
             Country.countDocuments(),
             Role.countDocuments({ status: { $ne: "deleted" } }),
             Device.countDocuments(),
-            Notification.countDocuments(),
         ]);
 
         // format stat objects
@@ -64,10 +61,6 @@ export const getStats = async (req, res) => {
             returnObject.statObj(
                 { ar: "عدد الأجهزة", en: "Device Count" },
                 deviceCount
-            ),
-            returnObject.statObj(
-                { ar: "عدد الإشعارات", en: "Notification Count" },
-                notificationCount
             ),
         ];
 
