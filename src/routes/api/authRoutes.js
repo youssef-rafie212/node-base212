@@ -71,7 +71,7 @@ router.post(
 
 router.post(
     "/complete-data",
-    authenticate,
+    authenticate(true),
     authValidation.validateCompleteData,
     validateRequest,
     authController.completeData
@@ -84,6 +84,6 @@ router.post(
     authController.verifyResetOtp
 );
 
-router.post("/sign-out", authenticate, authController.signOut);
+router.post("/sign-out", authenticate(), authController.signOut);
 
 export default router;

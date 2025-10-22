@@ -8,18 +8,18 @@ const router = express.Router();
 
 router
     .route("/me")
-    .get(authenticate, userController.me)
+    .get(authenticate(), userController.me)
     .patch(
-        authenticate,
+        authenticate(),
         userValidation.validateUpdateMe,
         validateRequest,
         userController.updateMe
     )
-    .delete(authenticate, userController.deleteMe);
+    .delete(authenticate(), userController.deleteMe);
 
 router.patch(
     "/me/language",
-    authenticate,
+    authenticate(),
     userValidation.validateUpdateLanguage,
     validateRequest,
     userController.updateLanguage

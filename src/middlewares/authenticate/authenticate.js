@@ -6,59 +6,68 @@ import { getModel } from "../../helpers/index.js";
 import { apiError } from "../../utils/index.js";
 
 // middleware that protects routes and authenticates the user
-const authenticate = (req, res, next) => {
-    try {
-        // extract the token from headers
-        const token = req.headers.authorization?.split(" ")[1];
+const authenticate =
+    (allowNotCompletedData = false) =>
+    (req, res, next) => {
+        try {
+            // extract the token from headers
+            const token = req.headers.authorization?.split(" ")[1];
 
-        // check if token exists in the headers
-        if (!token) {
-            return res.status(401).send(apiError(401, i18n.__("unauthorized")));
-        }
-
-        // verify the token
-        jwt.verify(
-            token,
-            process.env.JWT_SECRET || "default_secret",
-            async (err, decoded) => {
-                if (err) {
-                    return res
-                        .status(401)
-                        .send(apiError(401, i18n.__("unauthorized")));
-                }
-
-                // get model based on type
-                const model = getModel(decoded.userType);
-
-                // find user by id
-                const user = await model.findById(decoded.id);
-
-                // validate the user
-                if (!user || user.status !== "active" || !user.isVerified) {
-                    return res
-                        .status(401)
-                        .send(apiError(401, i18n.__("unauthorized")));
-                }
-
-                // check if the token exists in the database
-                const userToken = await UserToken.findOne({
-                    token,
-                });
-                if (!userToken) {
-                    return res
-                        .status(401)
-                        .send(apiError(401, i18n.__("unauthorized")));
-                }
-
-                // assign the decoded token to the request
-                req.sub = decoded;
-
-                next();
+            // check if token exists in the headers
+            if (!token) {
+                return res
+                    .status(401)
+                    .send(apiError(401, i18n.__("unauthorized")));
             }
-        );
-    } catch (error) {
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
-    }
-};
+
+            // verify the token
+            jwt.verify(
+                token,
+                process.env.JWT_SECRET || "default_secret",
+                async (err, decoded) => {
+                    if (err) {
+                        return res
+                            .status(401)
+                            .send(apiError(401, i18n.__("unauthorized")));
+                    }
+
+                    // get model based on type
+                    const model = getModel(decoded.userType);
+
+                    // find user by id
+                    const user = await model.findById(decoded.id);
+
+                    // validate the user
+                    if (
+                        !user ||
+                        user.status !== "active" ||
+                        !user.isVerified ||
+                        (!allowNotCompletedData && !user.dataCompleted)
+                    ) {
+                        return res
+                            .status(401)
+                            .send(apiError(401, i18n.__("unauthorized")));
+                    }
+
+                    // check if the token exists in the database
+                    const userToken = await UserToken.findOne({
+                        token,
+                    });
+                    if (!userToken) {
+                        return res
+                            .status(401)
+                            .send(apiError(401, i18n.__("unauthorized")));
+                    }
+
+                    // assign the decoded token to the request
+                    req.sub = decoded;
+
+                    next();
+                }
+            );
+        } catch (error) {
+            res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
+        }
+    };
 
 export default authenticate;

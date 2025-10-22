@@ -5,6 +5,6 @@ import { authenticate } from "../../middlewares/index.js";
 
 const router = express.Router();
 
-router.get("/", authenticate, chatRoomController.getChatRooms);
+router.get("/", authenticate(), chatRoomController.getChatRooms);
 
 export default router;
