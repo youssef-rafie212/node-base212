@@ -298,6 +298,10 @@ export const localSignIn = async (req, res) => {
                 );
         }
 
+        // create a retry token in case of not completed data or unverified account,
+        // so the user can continue to complete data or verify account
+        const retryToken = await tokens.newToken(user.id, data.type);
+
         // check if user is blocked
         if (user.status === "blocked") {
             return res
@@ -309,14 +313,28 @@ export const localSignIn = async (req, res) => {
         if (!user.isVerified) {
             return res
                 .status(401)
-                .send(apiError(401, i18n.__("accountNotVerified")));
+                .send(
+                    apiError(
+                        401,
+                        i18n.__("accountNotVerified"),
+                        "NOT_VERIFIED",
+                        retryToken
+                    )
+                );
         }
 
         // check if user complelted data
         if (!user.dataCompleted) {
             return res
                 .status(401)
-                .send(apiError(401, i18n.__("dataNotCompleted")));
+                .send(
+                    apiError(
+                        401,
+                        i18n.__("dataNotCompleted"),
+                        "NOT_COMPLETED",
+                        retryToken
+                    )
+                );
         }
 
         // generate token
