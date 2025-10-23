@@ -31,6 +31,16 @@ const authenticate =
                             .send(apiError(401, i18n.__("unauthorized")));
                     }
 
+                    // check if the token exists in the database
+                    const userToken = await UserToken.findOne({
+                        token,
+                    });
+                    if (!userToken) {
+                        return res
+                            .status(401)
+                            .send(apiError(401, i18n.__("unauthorized")));
+                    }
+
                     // get model based on type
                     const model = getModel(decoded.userType);
 
@@ -44,16 +54,9 @@ const authenticate =
                         !user.isVerified ||
                         (!allowNotCompletedData && !user.dataCompleted)
                     ) {
-                        return res
-                            .status(401)
-                            .send(apiError(401, i18n.__("unauthorized")));
-                    }
+                        // delete current token
+                        UserToken.deleteOne({ token });
 
-                    // check if the token exists in the database
-                    const userToken = await UserToken.findOne({
-                        token,
-                    });
-                    if (!userToken) {
                         return res
                             .status(401)
                             .send(apiError(401, i18n.__("unauthorized")));
