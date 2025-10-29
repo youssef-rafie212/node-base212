@@ -171,7 +171,7 @@ export const adminObj = (admin, role) => {
         avatar,
         status: admin.status,
         language: admin.language,
-        isAdmin: admin.isAdmin,
+        isSuperAdmin: admin.isSuperAdmin,
         role: role.name,
     };
 };

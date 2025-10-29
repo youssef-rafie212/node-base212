@@ -108,7 +108,7 @@ export const updateRoleName = async (req, res) => {
         }
 
         // dont allow updating admin role
-        if (role.isAdmin) {
+        if (role.isSuperAdminRole) {
             return res
                 .status(400)
                 .send(apiError(400, i18n.__("cantModifyAdminRole")));
@@ -148,7 +148,7 @@ export const deleteRole = async (req, res) => {
         }
 
         // dont allow deleting admin role
-        if (role.isAdmin) {
+        if (role.isSuperAdminRole) {
             return res
                 .status(400)
                 .send(apiError(400, i18n.__("cantModifyAdminRole")));

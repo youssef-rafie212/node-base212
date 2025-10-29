@@ -14,7 +14,7 @@ const adminSchema = new mongoose.Schema(
             enum: ["blocked", "active", "deleted"],
             default: "active",
         },
-        isAdmin: { type: Boolean, default: false },
+        isSuperAdmin: { type: Boolean, default: false },
         role: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Role",

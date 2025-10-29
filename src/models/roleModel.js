@@ -5,7 +5,7 @@ const roleSchema = new mongoose.Schema({
         ar: { type: String },
         en: { type: String },
     },
-    isAdmin: { type: Boolean, default: false },
+    isSuperAdminRole: { type: Boolean, default: false },
     status: { type: String, enum: ["active", "deleted"], default: "active" },
     permissions: [{ type: String }],
 });
