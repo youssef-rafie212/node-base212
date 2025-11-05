@@ -1,698 +1,197 @@
 import i18n from "i18n";
-import admin from "firebase-admin";
 
-import { apiError, apiResponse, returnObject } from "../../utils/index.js";
-import {
-    getModel,
-    duplicate,
-    sendVerification,
-    devices,
-    tokens,
-    userAvatars,
-    otps,
-    afterAuth,
-    validateCountryExists,
-} from "../../helpers/index.js";
+import { apiError, apiResponse } from "../../utils/index.js";
 
-// local sign up for user with full data
-export const signUp = async (req, res) => {
-    try {
-        const data = req.validatedData;
+export class AuthController {
+    constructor(authService) {
+        this.authService = authService;
+    }
 
-        // get model based on type
-        const model = getModel(data.type);
+    async signup(req, res) {
+        try {
+            const data = req.validatedData;
 
-        // check for duplicate email if it exists in body
-        if (data.email) {
-            const isDuplicate = await duplicate(model, "email", data.email);
-            if (isDuplicate) {
-                return res
-                    .status(400)
-                    .send(apiError(400, i18n.__("emailExists")));
+            const response = await this.authService.signup(data, req);
+
+            if (response.error) {
+                return res.status(400).send(apiError(400, response.error));
             }
-        }
 
-        // check for duplicate phone if it exists in body
-        if (data.phone) {
-            const isPhoneDuplicate = await duplicate(
-                model,
-                "phone",
-                data.phone
+            res.send(
+                apiResponse(200, i18n.__("successfulSignup"), response.data)
             );
-            if (isPhoneDuplicate) {
-                return res
-                    .status(400)
-                    .send(apiError(400, i18n.__("phoneExists")));
-            }
+        } catch (error) {
+            console.log(error);
+            res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
         }
-
-        // validate country if it exists in body
-        if (data.country) {
-            const isCountryValid = await validateCountryExists(data.country);
-            if (!isCountryValid) {
-                return res
-                    .status(400)
-                    .send(apiError(400, i18n.__("invalidCountry")));
-            }
-        }
-
-        // handle avatar upload if it exists in the request
-        const id = await userAvatars.uploadAvatar(req, "users", data);
-
-        // set dataCompleted as true (no complete data step)
-        data.dataCompleted = true;
-
-        data.expireAt = new Date(Date.now() + 60 * 60 * 1000);
-
-        // generate user token and store user device
-        const token = await afterAuth(
-            id,
-            data.type,
-            data.fcmToken,
-            data.deviceType
-        );
-
-        // create new user
-        const user = await model.create({ _id: id, ...data });
-
-        // populate wanted fields (pre, post hooks wont work here)
-        await user.populate("country");
-
-        // get a clean formated object to return in the response
-        const resData = returnObject.userWithTokenObj(user, token);
-
-        res.send(apiResponse(200, i18n.__("successfulSignup"), resData));
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
     }
-};
 
-// request an otp that will be sent on email
-export const requestOtpEmail = async (req, res) => {
-    try {
-        const data = req.validatedData;
+    async requestOtp(req, res) {
+        try {
+            const data = req.validatedData;
 
-        // get model based on type
-        const model = getModel(data.type);
+            const response = await this.authService.requestOtp(data);
 
-        // find user by email
-        const user = await model.findOne({
-            email: data.email,
-            status: "active",
-        });
-        if (!user) {
-            return res.status(400).send(apiError(400, i18n.__("userNotFound")));
+            if (response.error) {
+                return res.status(400).send(apiError(400, response.error));
+            }
+
+            res.send(apiResponse(200, i18n.__("otpSent"), response.data));
+        } catch (error) {
+            console.log(error);
+            res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
         }
-
-        // generate and send otp
-        const otp = await sendVerification.sendVerificationByEmail(
-            user.email,
-            "otpSentEmail",
-            "otpSentEmailText",
-            "otpSentEmailHtml"
-        );
-
-        // store otp for user
-        otps.setOtp(user, otp);
-        await user.save();
-
-        res.send(apiResponse(200, i18n.__("otpSent"), { email: user.email }));
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
     }
-};
 
-// request an otp that will be sent on phone
-export const requestOtpPhone = async (req, res) => {
-    try {
-        const data = req.validatedData;
+    async localSignIn(req, res) {
+        try {
+            const data = req.validatedData;
 
-        // get model based on type
-        const model = getModel(data.type);
+            const response = await this.authService.localSignIn(data);
 
-        // find user by phone
-        const user = await model.findOne({
-            phone: data.phone,
-            status: "active",
-        });
-        if (!user) {
-            return res.status(400).send(apiError(400, i18n.__("userNotFound")));
+            if (response.error) {
+                return res.status(401).send(apiError(401, response.error));
+            }
+
+            res.send(
+                apiResponse(200, i18n.__("successfulLogin"), response.data)
+            );
+        } catch (error) {
+            console.log(error);
+            res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
         }
+    }
 
-        // generate and send otp
-        const { otp, smsResponse } =
-            await sendVerification.sendVerificationBySMS(
-                user.phone,
-                "otpSentSms"
+    async socialSignIn(req, res) {
+        try {
+            const data = req.validatedData;
+
+            const response = await this.authService.socialSignIn(data);
+
+            if (response.error) {
+                return res.status(401).send(apiError(401, response.error));
+            }
+
+            res.send(
+                apiResponse(200, i18n.__("successfulLogin"), response.data)
+            );
+        } catch (error) {
+            console.log(error);
+            res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
+        }
+    }
+
+    async verifyEmail(req, res) {
+        try {
+            const data = req.validatedData;
+
+            const response = await this.authService.verifyEmail(data);
+
+            if (response.error) {
+                return res.status(400).send(apiError(400, response.error));
+            }
+
+            res.send(apiResponse(200, i18n.__("userVerified"), response.data));
+        } catch (error) {
+            console.log(error);
+            res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
+        }
+    }
+
+    async verifyPhone(req, res) {
+        try {
+            const data = req.validatedData;
+
+            const response = await this.authService.verifyPhone(data);
+
+            if (response.error) {
+                return res.status(400).send(apiError(400, response.error));
+            }
+
+            res.send(apiResponse(200, i18n.__("userVerified"), response.data));
+        } catch (error) {
+            console.log(error);
+            res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
+        }
+    }
+
+    async completeData(req, res) {
+        try {
+            const data = req.validatedData;
+
+            const { sub } = req;
+
+            const response = await this.authService.completeData(
+                data,
+                sub,
+                req
             );
 
-        // check if SMS was sent successfully
-        if (!smsResponse) {
-            return res.status(500).send(apiError(500, i18n.__("smsNotSent")));
-        }
-
-        // store otp for user
-        otps.setOtp(user, otp);
-        await user.save();
-
-        res.send(apiResponse(200, i18n.__("otpSent"), { phone: user.phone }));
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
-    }
-};
-
-// request otp for phone or email
-export const requestOtp = async (req, res) => {
-    try {
-        const data = req.validatedData;
-
-        // get model based on type
-        const model = getModel(data.type);
-
-        // detect (email / phone) ---
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const phoneRegex = /^\+?[0-9]{7,15}$/;
-
-        let user = null;
-        let otp = null;
-
-        if (emailRegex.test(data.identifier)) {
-            // handle email
-            user = await model.findOne({
-                email: data.identifier,
-                status: "active",
-            });
-            if (!user) {
-                return res
-                    .status(400)
-                    .send(apiError(400, i18n.__("userNotFound")));
+            if (response.error) {
+                return res.status(400).send(apiError(400, response.error));
             }
 
-            otp = await sendVerification.sendVerificationByEmail(
-                user.email,
-                "otpSentEmail",
-                "otpSentEmailText",
-                "otpSentEmailHtml"
+            res.send(apiResponse(200, i18n.__("userUpdated"), response.data));
+        } catch (error) {
+            console.log(error);
+            res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
+        }
+    }
+
+    async signOut(req, res) {
+        try {
+            const { id } = req.sub;
+
+            const response = await this.authService.signOut(id);
+
+            if (response.error) {
+                return res.status(401).send(apiError(401, response.error));
+            }
+
+            res.send(apiResponse(200, i18n.__("userSignedOut"), response.data));
+        } catch (error) {
+            console.log(error);
+            res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
+        }
+    }
+
+    async resetPassword(req, res) {
+        try {
+            const data = req.validatedData;
+
+            const response = await this.authService.resetPassword(data);
+
+            if (response.error) {
+                return res.status(400).send(apiError(400, response.error));
+            }
+
+            res.send(
+                apiResponse(
+                    200,
+                    i18n.__("passwordResetSuccessfully"),
+                    response.data
+                )
             );
+        } catch (error) {
+            console.log(error);
+            res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
+        }
+    }
 
-            otps.setOtp(user, otp);
-            await user.save();
+    async verifyResetOtp(req, res) {
+        try {
+            const data = req.validatedData;
 
-            return res.send(
-                apiResponse(200, i18n.__("otpSent"), { email: user.email })
-            );
-        } else if (phoneRegex.test(data.identifier)) {
-            // handle phone otp
-            user = await model.findOne({
-                phone: data.identifier,
-                status: "active",
-            });
-            if (!user) {
-                return res
-                    .status(400)
-                    .send(apiError(400, i18n.__("userNotFound")));
+            const response = await this.authService.verifyResetOtp(data);
+
+            if (response.error) {
+                return res.status(400).send(apiError(400, response.error));
             }
 
-            const { otp: smsOtp, smsResponse } =
-                await sendVerification.sendVerificationBySMS(user.phone);
-
-            if (!smsResponse) {
-                return res
-                    .status(500)
-                    .send(apiError(500, i18n.__("smsNotSent")));
-            }
-
-            otps.setOtp(user, smsOtp);
-            await user.save();
-
-            return res.send(
-                apiResponse(200, i18n.__("otpSent"), { phone: user.phone })
-            );
-        } else {
-            // invalid input
-            return res
-                .status(400)
-                .send(apiError(400, i18n.__("invalidIdentifier")));
+            res.send(apiResponse(200, i18n.__("otpVerified"), response.data));
+        } catch (error) {
+            console.log(error);
+            res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
         }
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
     }
-};
-
-// local sign in
-export const localSignIn = async (req, res) => {
-    try {
-        const data = req.validatedData;
-
-        // get model based on type
-        const model = getModel(data.type);
-
-        // find user by email or phone
-        let user = null;
-
-        if (data.email) {
-            user = await model.findOne({
-                email: data.email,
-                status: "active",
-            });
-        } else if (data.phone) {
-            user = await model.findOne({
-                phone: data.phone,
-                status: "active",
-            });
-        }
-
-        if (!user) {
-            return res
-                .status(401)
-                .send(
-                    apiError(
-                        401,
-                        i18n.__(
-                            data.email
-                                ? "invalidCredentialsEmail"
-                                : "invalidCredentialsPhone"
-                        )
-                    )
-                );
-        }
-
-        // check password
-        const isMatch = await user.comparePassword(data.password);
-        if (!isMatch) {
-            return res
-                .status(401)
-                .send(
-                    apiError(
-                        401,
-                        i18n.__(
-                            data.email
-                                ? "invalidCredentialsEmail"
-                                : "invalidCredentialsPhone"
-                        )
-                    )
-                );
-        }
-
-        // create a retry token in case of not completed data or unverified account,
-        // so the user can continue to complete data or verify account
-        const retryToken = await tokens.newToken(user.id, data.type);
-
-        // check if user is blocked
-        if (user.status === "blocked") {
-            return res
-                .status(401)
-                .send(apiError(401, i18n.__("accountBlocked")));
-        }
-
-        // check if user is not verified
-        if (!user.isVerified) {
-            return res
-                .status(401)
-                .send(
-                    apiError(
-                        401,
-                        i18n.__("accountNotVerified"),
-                        "NOT_VERIFIED",
-                        retryToken
-                    )
-                );
-        }
-
-        // check if user complelted data
-        if (!user.dataCompleted) {
-            return res
-                .status(401)
-                .send(
-                    apiError(
-                        401,
-                        i18n.__("dataNotCompleted"),
-                        "NOT_COMPLETED",
-                        retryToken
-                    )
-                );
-        }
-
-        // generate token
-        const token = await afterAuth(
-            user._id,
-            "user",
-            data.fcmToken,
-            data.deviceType
-        );
-
-        // get a clean formated object to return in the response
-        const resData = returnObject.userWithTokenObj(user, token);
-
-        res.send(apiResponse(200, i18n.__("successfulLogin"), resData));
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
-    }
-};
-
-// social sign in
-export const socialSignIn = async (req, res) => {
-    try {
-        const data = req.validatedData;
-
-        // verify firebase ID token
-        const decoded = await admin.auth().verifyIdToken(data.idToken);
-
-        // extract info from firebase token
-        const { uid, email, name, picture } = decoded;
-
-        // get model based on type
-        const model = getModel(data.type);
-
-        // track if the user is new or existing
-        let isNew = false;
-
-        // try to find user by Firebase UID
-        let user = await model.findOne({ uId: uid, status: "active" });
-
-        if (!user) {
-            // create new user with limited info (to be completed later)
-            isNew = true;
-            user = await model.create({
-                firebaseUid: uid,
-                email: email || "",
-                name: name || "",
-                avatar: picture || "",
-                dataCompleted: false,
-                isVerified: true,
-            });
-        }
-
-        // generate own JWT
-        const token = await afterAuth(
-            user._id,
-            user.type,
-            data.fcmToken,
-            data.deviceType
-        );
-
-        // populate the country field if the user is new (pre, post hook wont work)
-        if (isNew) await user.populate("country");
-
-        // get a clean formated object to return in the response
-        const resData = returnObject.userWithTokenObj(user, token);
-
-        res.send(apiResponse(200, i18n.__("successfulLogin"), resData));
-    } catch (error) {
-        console.log(error);
-        res.status(401).send(apiError(401, i18n.__("invalidFirebaseToken")));
-    }
-};
-
-// verify user email by otp
-export const verifyEmail = async (req, res) => {
-    try {
-        const data = req.validatedData;
-
-        // get model based on type
-        const model = getModel(data.type);
-
-        // find user by email and activation code
-        const user = await model.findOne({
-            email: data.email,
-            status: "active",
-        });
-        if (!user) {
-            return res.status(400).send(apiError(400, i18n.__("userNotFound")));
-        }
-
-        // check if user is already verified
-        if (user.isVerified) {
-            return res
-                .status(400)
-                .send(apiError(400, i18n.__("alreadyVerified")));
-        }
-
-        // validate the otp
-        const validOtp = otps.isOtpValid(user, data.otp);
-        if (!validOtp) {
-            return res.status(400).send(apiError(400, i18n.__("invalidOtp")));
-        }
-
-        // activate user
-        otps.resetOtp(user); // reset otp
-        user.isVerified = true;
-        await user.save();
-
-        await model.updateOne({ _id: user._id }, { $unset: { expireAt: "" } });
-
-        res.send(
-            apiResponse(200, i18n.__("userVerified"), { userId: user._id })
-        );
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
-    }
-};
-
-// verify user phone by otp
-export const verifyPhone = async (req, res) => {
-    try {
-        const data = req.validatedData;
-
-        // get model based on type
-        const model = getModel(data.type);
-
-        // find user by phone and activation code
-        const user = await model.findOne({
-            phone: data.phone,
-            status: "active",
-        });
-        if (!user) {
-            return res.status(400).send(apiError(400, i18n.__("userNotFound")));
-        }
-
-        // check if user is already verified
-        if (user.isVerified) {
-            return res
-                .status(400)
-                .send(apiError(400, i18n.__("alreadyVerified")));
-        }
-
-        // validate the otp
-        const validOtp = otps.isOtpValid(user, data.otp);
-        if (!validOtp) {
-            return res.status(400).send(apiError(400, i18n.__("invalidOtp")));
-        }
-
-        // Activate user
-        otps.resetOtp(user); // reset otp
-        user.isVerified = true;
-        await user.save();
-
-        await model.updateOne({ _id: user._id }, { $unset: { expireAt: "" } });
-
-        res.send(
-            apiResponse(200, i18n.__("userVerified"), { userId: user._id })
-        );
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
-    }
-};
-
-// handler for completing the user data after a social login as it only provides limitied data
-export const completeData = async (req, res) => {
-    try {
-        // get current signed in user
-        const { sub } = req;
-
-        const data = req.validatedData;
-
-        // get model based on type
-        const model = getModel(sub.userType);
-
-        // get the user document
-        const user = await model.findOne({
-            _id: sub.id,
-            status: "active",
-            isVerified: true,
-        });
-        if (!user) {
-            return res.status(400).send(apiError(400, i18n.__("userNotFound")));
-        }
-
-        // check if user already completed data
-        if (user.dataCompleted) {
-            return res
-                .status(400)
-                .send(apiError(400, i18n.__("dataAlreadyCompleted")));
-        }
-
-        // handle avatar upload if it exists in the request
-        await userAvatars.uploadAvatar(req, "users", data, user._id);
-
-        // set dataCompleted as true
-        data.dataCompleted = true;
-
-        // Update user data
-        Object.assign(user, data);
-        await user.save();
-
-        // get a clean formated object to return in the response
-        const resData = returnObject.userObj(user);
-
-        res.send(apiResponse(200, i18n.__("userUpdated"), resData));
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
-    }
-};
-
-// sign out the user and clear their session related data
-export const signOut = async (req, res) => {
-    try {
-        const { id } = req.sub;
-
-        // delete user tokens
-        await tokens.deleteAllUserTokens(id);
-
-        // delete user devices
-        await devices.deleteAllUserDevices(id);
-
-        res.send(apiResponse(200, i18n.__("userSignedOut")));
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
-    }
-};
-
-// reset password using email or phone and otp
-export const resetPassword = async (req, res) => {
-    try {
-        const data = req.validatedData;
-
-        // get model based on type
-        const model = getModel(data.type);
-
-        // detect (email / phone) ---
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const phoneRegex = /^\+?[0-9]{7,15}$/;
-
-        let user = null;
-
-        if (emailRegex.test(data.identifier)) {
-            // handle email
-            user = await model.findOne({
-                email: data.identifier,
-                status: "active",
-                isVerified: true,
-                dataCompleted: true,
-                canReset: true,
-            });
-            if (!user) {
-                return res
-                    .status(400)
-                    .send(apiError(400, i18n.__("userNotFound")));
-            }
-        } else if (phoneRegex.test(data.identifier)) {
-            // handle phone
-            user = await model.findOne({
-                phone: data.identifier,
-                status: "active",
-                isVerified: true,
-                dataCompleted: true,
-                canReset: true,
-            });
-            if (!user) {
-                return res
-                    .status(400)
-                    .send(apiError(400, i18n.__("userNotFound")));
-            }
-        } else {
-            // invalid input
-            return res
-                .status(400)
-                .send(apiError(400, i18n.__("invalidIdentifier")));
-        }
-
-        // update the user's password
-        user.password = data.password;
-        user.canReset = false;
-        await user.save();
-
-        // delete user tokens to force re-authentication
-        await tokens.deleteAllUserTokens(user.id);
-
-        // delete user devices
-        await devices.deleteAllUserDevices(user.id);
-
-        res.send(apiResponse(200, i18n.__("passwordResetSuccessfully")));
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
-    }
-};
-
-export const verifyResetOtp = async (req, res) => {
-    try {
-        const data = req.validatedData;
-
-        // get model based on type
-        const model = getModel(data.type);
-
-        // detect (email / phone) ---
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const phoneRegex = /^\+?[0-9]{7,15}$/;
-
-        let user = null;
-
-        if (emailRegex.test(data.identifier)) {
-            // handle email
-            user = await model.findOne({
-                email: data.identifier,
-                status: "active",
-                isVerified: true,
-                dataCompleted: true,
-            });
-            if (!user) {
-                return res
-                    .status(400)
-                    .send(apiError(400, i18n.__("userNotFound")));
-            }
-        } else if (phoneRegex.test(data.identifier)) {
-            // handle phone
-            user = await model.findOne({
-                phone: data.identifier,
-                status: "active",
-                isVerified: true,
-                dataCompleted: true,
-            });
-            if (!user) {
-                return res
-                    .status(400)
-                    .send(apiError(400, i18n.__("userNotFound")));
-            }
-        } else {
-            // invalid input
-            return res
-                .status(400)
-                .send(apiError(400, i18n.__("invalidIdentifier")));
-        }
-
-        // validate the otp
-        const validOtp = otps.isOtpValid(user, data.otp);
-        if (!validOtp) {
-            return res.status(400).send(apiError(400, i18n.__("invalidOtp")));
-        }
-
-        otps.resetOtp(user); // reset otp
-        user.canReset = true;
-        await user.save();
-
-        res.send(apiResponse(200, i18n.__("otpVerified")), {});
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
-    }
-};
+}
