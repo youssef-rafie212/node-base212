@@ -1,13 +1,6 @@
 import i18n from "i18n";
 
-import {
-    apiError,
-    apiResponse,
-    returnObject,
-    sharedVariable,
-} from "../../utils/index.js";
-import { Role, Admin } from "../../models/index.js";
-import { duplicateArEnName } from "../../helpers/index.js";
+import { apiError, apiResponse } from "../../utils/index.js";
 
 export class RoleController {
     constructor(roleService) {

@@ -8,290 +8,134 @@ import {
     validateCountryExists,
 } from "../../helpers/index.js";
 
-// create new user
-export const createUser = async (req, res) => {
-    try {
-        const data = req.validatedData;
-
-        // get model based on type
-        const model = getModel(data.type);
-
-        // check for duplicate email if it exists in body
-        if (data.email) {
-            const isDuplicate = await duplicate(model, "email", data.email);
-            if (isDuplicate) {
-                return res
-                    .status(400)
-                    .send(apiError(400, i18n.__("emailExists")));
-            }
-        }
-
-        // check for duplicate phone if it exists in body
-        if (data.phone) {
-            const isPhoneDuplicate = await duplicate(
-                model,
-                "phone",
-                data.phone
-            );
-            if (isPhoneDuplicate) {
-                return res
-                    .status(400)
-                    .send(apiError(400, i18n.__("phoneExists")));
-            }
-        }
-
-        // validate country if it exists in body
-        if (data.country) {
-            const isCountryValid = await validateCountryExists(data.country);
-            if (!isCountryValid) {
-                return res
-                    .status(400)
-                    .send(apiError(400, i18n.__("invalidCountry")));
-            }
-        }
-
-        // handle avatar upload if it exists in the request
-        const id = await userAvatars.uploadAvatar(req, "users", data);
-
-        // create new user
-        const user = await model.create({ _id: id, ...data });
-
-        // populate wanted fields
-        await user.populate("country");
-
-        // generate response object
-        const resData = returnObject.userObj(user);
-
-        res.send(apiResponse(200, i18n.__("documentCreated"), resData));
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
+export class UserController {
+    constructor(userService) {
+        this.userService = userService;
     }
-};
 
-// get all users
-export const getAllUsers = async (req, res) => {
-    try {
-        const data = req.validatedData;
+    async createUser(req, res) {
+        try {
+            const data = req.validatedData;
 
-        // get model based on type
-        const model = getModel(data.type);
+            const response = await this.userService.createUser(data, req);
 
-        // pagination
-        let { page = 1, limit = 10 } = req.query;
-        page = parseInt(page);
-        limit = parseInt(limit);
-        const skip = (page - 1) * limit;
+            if (response.error) {
+                return res.status(400).send(apiError(400, response.error));
+            }
 
-        // get users and total count
-        const query = { status: { $ne: "deleted" } };
-        const [totalCount, users] = await Promise.all([
-            model.countDocuments(query),
-            model.find(query).populate("country").skip(skip).limit(limit),
-        ]);
+            res.send(
+                apiResponse(200, i18n.__("documentCreated"), response.data)
+            );
+        } catch (error) {
+            console.log(error);
+            res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
+        }
+    }
 
-        // calculate total pages
-        const totalPages = Math.ceil(totalCount / limit);
+    async getAllUsers(req, res) {
+        try {
+            const data = req.validatedData;
 
-        // format admin objects
-        const resData = users.map((user) => returnObject.userObj(user));
+            // pagination data
+            const { page = 1, limit = 10 } = req.query;
 
-        res.send(
-            apiResponse(
-                200,
-                i18n.__("documentsFetched"),
-                resData,
-                totalCount,
+            const response = await this.userService.getAllUsers(
+                data,
                 page,
-                totalPages
-            )
-        );
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
-    }
-};
-
-// get user by id
-export const getUser = async (req, res) => {
-    try {
-        const data = req.validatedData;
-
-        // get model based on type
-        const model = getModel(data.type);
-
-        // find user by id
-        const user = await model
-            .findOne({
-                _id: data.id,
-                status: { $ne: "deleted" },
-            })
-            .populate("country");
-
-        if (!user) {
-            return res
-                .status(400)
-                .send(apiError(400, i18n.__("documentNotFound")));
-        }
-
-        // generate response object
-        const resData = returnObject.userObj(user);
-
-        res.send(apiResponse(200, i18n.__("documentsFetched"), resData));
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
-    }
-};
-
-// update user
-export const updateUser = async (req, res) => {
-    try {
-        const data = req.validatedData;
-
-        // get model based on type
-        const model = getModel(data.type);
-
-        // find user by id
-        const user = await model
-            .findOne({
-                _id: data.id,
-                status: { $ne: "deleted" },
-            })
-            .populate("country");
-
-        if (!user) {
-            return res
-                .status(400)
-                .send(apiError(400, i18n.__("documentNotFound")));
-        }
-
-        // check for duplicate email if it exists in body
-        if (data.email) {
-            const isDuplicate = await duplicate(
-                model,
-                "email",
-                data.email,
-                data.id
+                limit
             );
-            if (isDuplicate) {
-                return res
-                    .status(400)
-                    .send(apiError(400, i18n.__("emailExists")));
-            }
-        }
 
-        // check for duplicate phone if it exists in body
-        if (data.phone) {
-            const isPhoneDuplicate = await duplicate(
-                model,
-                "phone",
-                data.phone,
-                data.id
+            if (response.error) {
+                return res.status(400).send(apiError(400, response.error));
+            }
+
+            res.send(
+                apiResponse(
+                    200,
+                    i18n.__("documentsFetched"),
+                    response.data,
+                    response.totalCount,
+                    response.page,
+                    response.totalPages
+                )
             );
-            if (isPhoneDuplicate) {
-                return res
-                    .status(400)
-                    .send(apiError(400, i18n.__("phoneExists")));
+        } catch (error) {
+            console.log(error);
+            res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
+        }
+    }
+
+    async getUser(req, res) {
+        try {
+            const data = req.validatedData;
+
+            const response = await this.userService.getUser(data);
+
+            if (response.error) {
+                return res.status(400).send(apiError(400, response.error));
             }
-        }
 
-        // validate country if it exists in body
-        if (data.country) {
-            const isCountryValid = await validateCountryExists(data.country);
-            if (!isCountryValid) {
-                return res
-                    .status(400)
-                    .send(apiError(400, i18n.__("invalidCountry")));
+            res.send(apiResponse(200, i18n.__("documentsFetched"), response));
+        } catch (error) {
+            console.log(error);
+            res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
+        }
+    }
+
+    async updateUser(req, res) {
+        try {
+            const data = req.validatedData;
+
+            const response = await this.userService.updateUser(data, req);
+
+            if (response.error) {
+                return res.status(400).send(apiError(400, response.error));
             }
+
+            res.send(
+                apiResponse(200, i18n.__("documentUpdated"), response.data)
+            );
+        } catch (error) {
+            console.log(error);
+            res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
         }
-
-        // handle avatar upload if it exists in the request
-        await userAvatars.uploadAvatar(
-            req,
-            "users",
-            data,
-            true,
-            data.id,
-            user.avatar
-        );
-
-        // update user
-        Object.assign(user, data);
-        await user.save();
-
-        // generate response object
-        const resData = returnObject.userObj(user);
-
-        res.send(apiResponse(200, i18n.__("documentUpdated"), resData));
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
     }
-};
 
-// soft delete user by id
-export const deleteUser = async (req, res) => {
-    try {
-        const data = req.validatedData;
+    async deleteUser(req, res) {
+        try {
+            const data = req.validatedData;
 
-        // get model based on type
-        const model = getModel(data.type);
+            const response = await this.userService.deleteUser(data);
 
-        // find user by id and soft delete it
-        const user = await model.findOne({
-            _id: data.id,
-            status: { $ne: "deleted" },
-        });
+            if (response.error) {
+                return res.status(400).send(apiError(400, response.error));
+            }
 
-        if (!user) {
-            return res
-                .status(400)
-                .send(apiError(400, i18n.__("documentNotFound")));
+            res.send(
+                apiResponse(200, i18n.__("documentDeleted"), response.data)
+            );
+        } catch (error) {
+            console.log(error);
+            res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
         }
-
-        // soft delete the user
-        user.status = "deleted";
-        await user.save();
-
-        res.send(apiResponse(200, i18n.__("documentDeleted"), {}));
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
     }
-};
 
-// toggle block user
-export const toggleBlockUser = async (req, res) => {
-    try {
-        const data = req.validatedData;
+    async toggleBlockUser(req, res) {
+        try {
+            const data = req.validatedData;
 
-        // get model based on type
-        const model = getModel(data.type);
+            const response = await this.userService.toggleBlockUser(data);
 
-        // find user by id
-        const user = await model.findOne({
-            _id: data.id,
-            status: { $ne: "deleted" },
-        });
+            if (response.error) {
+                return res.status(400).send(apiError(400, response.error));
+            }
 
-        if (!user) {
-            return res
-                .status(400)
-                .send(apiError(400, i18n.__("documentNotFound")));
+            res.send(
+                apiResponse(200, i18n.__("documentUpdated"), response.data)
+            );
+        } catch (error) {
+            console.log(error);
+            res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
         }
-
-        // toggle block user
-        user.status = user.status === "active" ? "blocked" : "active";
-        await user.save();
-
-        res.send(
-            apiResponse(200, i18n.__("documentUpdated"), {
-                newStatus: user.status,
-            })
-        );
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
     }
-};
+}
