@@ -9,7 +9,7 @@ import {
     initializeFirebase,
     socketManager,
     initializeJobs,
-} from "./src/services/index.js";
+} from "./src/external-services/index.js";
 
 dotenv.config();
 

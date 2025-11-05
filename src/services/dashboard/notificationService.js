@@ -1,14 +1,10 @@
 import i18n from "i18n";
 
-import { apiResponse, apiError, returnObject } from "../../utils/index.js";
-import { getModel, getRef } from "../../helpers/index.js";
+import { getModel } from "../../helpers/index.js";
 import { handleNotification } from "../../external-services/index.js";
 
-// sends a notification for one user
-export const sendSingleNotification = async (req, res) => {
-    try {
-        const data = req.validatedData;
-
+export class NotificationService {
+    async sendSingleNotification(data) {
         // get model based on type
         const model = getModel(data.type);
 
@@ -19,9 +15,10 @@ export const sendSingleNotification = async (req, res) => {
         });
 
         if (!user) {
-            return res
-                .status(400)
-                .send(apiError(400, i18n.__("documentNotFound")));
+            return {
+                error: i18n.__("documentNotFound"),
+                data: null,
+            };
         }
 
         // prepare notification data
@@ -38,18 +35,13 @@ export const sendSingleNotification = async (req, res) => {
             user.notifyCount + 1
         );
 
-        res.send(apiResponse(200, i18n.__("notificationSent"), {}));
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
+        return {
+            error: null,
+            data: {},
+        };
     }
-};
 
-// sends a notification for all users
-export const sendAllNotification = async (req, res) => {
-    try {
-        const data = req.validatedData;
-
+    async sendAllNotification(data) {
         // get model based on type
         const model = getModel(data.type);
 
@@ -74,10 +66,5 @@ export const sendAllNotification = async (req, res) => {
                 );
             })
         );
-
-        res.send(apiResponse(200, i18n.__("notificationSent"), {}));
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
     }
-};
+}
