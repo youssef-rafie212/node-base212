@@ -1,12 +1,6 @@
 import i18n from "i18n";
 
-import { apiError, apiResponse, returnObject } from "../../utils/index.js";
-import {
-    duplicate,
-    userAvatars,
-    getModel,
-    validateCountryExists,
-} from "../../helpers/index.js";
+import { apiError, apiResponse } from "../../utils/index.js";
 
 export class UserController {
     constructor(userService) {
