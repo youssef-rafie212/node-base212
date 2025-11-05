@@ -1,7 +1,7 @@
-export * as authController from "./authController.js";
-export * as roleController from "./roleController.js";
-export * as adminController from "./adminController.js";
-export * as userController from "./userController.js";
-export * as statsController from "./statsController.js";
-export * as settingsController from "./settingsController.js";
-export * as notificationController from "./notificationController.js";
+export { AuthController } from "./authController.js";
+export { RoleController } from "./roleController.js";
+export { AdminController } from "./adminController.js";
+export { UserController } from "./userController.js";
+export { StatsController } from "./statsController.js";
+export { SettingsController } from "./settingsController.js";
+export { NotificationController } from "./notificationController.js";
