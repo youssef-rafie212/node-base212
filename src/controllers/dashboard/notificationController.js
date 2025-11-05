@@ -1,83 +1,50 @@
 import i18n from "i18n";
 
-import { apiResponse, apiError, returnObject } from "../../utils/index.js";
-import { getModel, getRef } from "../../helpers/index.js";
-import { handleNotification } from "../../external-services/index.js";
+import { apiResponse, apiError } from "../../utils/index.js";
 
-// sends a notification for one user
-export const sendSingleNotification = async (req, res) => {
-    try {
-        const data = req.validatedData;
+export class NotificationController {
+    constructor(notificationService) {
+        this.notificationService = notificationService;
+    }
 
-        // get model based on type
-        const model = getModel(data.type);
+    async sendSingleNotification(req, res) {
+        try {
+            const data = req.validatedData;
 
-        // find user by id
-        const user = await model.findOne({
-            _id: data.id,
-            status: { $ne: "deleted" },
-        });
+            const response =
+                await this.notificationService.sendSingleNotification(data);
 
-        if (!user) {
-            return res
-                .status(400)
-                .send(apiError(400, i18n.__("documentNotFound")));
+            if (response.error) {
+                return res.status(400).send(apiError(400, response.error));
+            }
+
+            res.send(
+                apiResponse(200, i18n.__("notificationSent"), response.data)
+            );
+        } catch (error) {
+            console.log(error);
+            res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
         }
-
-        // prepare notification data
-        const titleObj = { ar: data.title.ar, en: data.title.en };
-        const messageObj = { ar: data.message.ar, en: data.message.en };
-
-        // send notification
-        await handleNotification(
-            user,
-            titleObj,
-            messageObj,
-            "admin",
-            {},
-            user.notifyCount + 1
-        );
-
-        res.send(apiResponse(200, i18n.__("notificationSent"), {}));
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
     }
-};
 
-// sends a notification for all users
-export const sendAllNotification = async (req, res) => {
-    try {
-        const data = req.validatedData;
+    async sendAllNotification(req, res) {
+        try {
+            const data = req.validatedData;
 
-        // get model based on type
-        const model = getModel(data.type);
+            const response = await this.notificationService.sendAllNotification(
+                data
+            );
 
-        const users = await model.find({
-            status: { $ne: "deleted" },
-        });
+            if (response.error) {
+                return res.status(400).send(apiError(400, response.error));
+            }
 
-        await Promise.all(
-            users.map((user) => {
-                // prepare notification data
-                const titleObj = { ar: data.title.ar, en: data.title.en };
-                const messageObj = { ar: data.message.ar, en: data.message.en };
-
-                // send notification
-                return handleNotification(
-                    user,
-                    titleObj,
-                    messageObj,
-                    "admin",
-                    {},
-                    user.notifyCount + 1
-                );
-            })
-        );
-
-        res.send(apiResponse(200, i18n.__("notificationSent"), {}));
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
+            res.send(
+                apiResponse(200, i18n.__("notificationSent"), response.data)
+            );
+        } catch (error) {
+            console.log(error);
+            res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
+        }
     }
-};
+}

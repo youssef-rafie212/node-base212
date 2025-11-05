@@ -9,245 +9,168 @@ import {
 import { Role, Admin } from "../../models/index.js";
 import { duplicateArEnName } from "../../helpers/index.js";
 
-// create new role
-export const createRole = async (req, res) => {
-    try {
-        const data = req.validatedData;
-
-        // check for duplicate role name (both en and ar)
-        const nameExists = await duplicateArEnName(Role, data.name);
-        if (nameExists) {
-            return res.status(400).send(apiError(400, i18n.__("nameExists")));
-        }
-
-        // create new role
-        const role = await Role.create(data);
-
-        // generate response object
-        const resData = returnObject.roleObj(role);
-
-        res.send(apiResponse(200, i18n.__("documentCreated"), resData));
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
+export class RoleController {
+    constructor(roleService) {
+        this.roleService = roleService;
     }
-};
 
-// gets all roles
-export const getAllRoles = async (req, res) => {
-    try {
-        // pagination
-        let { page = 1, limit = 10 } = req.query;
-        page = parseInt(page);
-        limit = parseInt(limit);
-        const skip = (page - 1) * limit;
+    async createRole(req, res) {
+        try {
+            const data = req.validatedData;
 
-        // get roles and total count
-        const query = { status: "active" };
-        const [totalCount, roles] = await Promise.all([
-            Role.countDocuments(query),
-            Role.find(query).skip(skip).limit(limit),
-        ]);
+            const response = await this.roleService.createRole(data);
 
-        // calculate total pages
-        const totalPages = Math.ceil(totalCount / limit);
+            if (response.error) {
+                return res.status(400).send(apiError(400, response.error));
+            }
 
-        // format role objects
-        const resData = roles.map((role) => returnObject.roleObj(role));
-
-        res.send(
-            apiResponse(
-                200,
-                i18n.__("documentsFetched"),
-                resData,
-                totalCount,
-                page,
-                totalPages
-            )
-        );
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
+            res.send(
+                apiResponse(200, i18n.__("documentCreated"), response.data)
+            );
+        } catch (error) {
+            console.log(error);
+            res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
+        }
     }
-};
 
-// get role by id
-export const getRole = async (req, res) => {
-    try {
-        const data = req.validatedData;
+    async getAllRoles(req, res) {
+        try {
+            // pagination data
+            const { page = 1, limit = 10 } = req.query;
 
-        // find role by id
-        const role = await Role.findOne({ _id: data.id, status: "active" });
-        if (!role) {
-            return res
-                .status(400)
-                .send(apiError(400, i18n.__("documentNotFound")));
+            const response = await this.roleService.getAllRoles(page, limit);
+
+            if (response.error) {
+                return res.status(400).send(apiError(400, response.error));
+            }
+
+            res.send(
+                apiResponse(
+                    200,
+                    i18n.__("documentsFetched"),
+                    response.data,
+                    response.totalCount,
+                    response.page,
+                    response.totalPages
+                )
+            );
+        } catch (error) {
+            console.log(error);
+            res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
         }
-
-        // generate response object
-        const resData = returnObject.roleObj(role);
-
-        res.send(apiResponse(200, i18n.__("documentsFetched"), resData));
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
     }
-};
 
-// updates role name
-export const updateRoleName = async (req, res) => {
-    try {
-        const data = req.validatedData;
+    async getRole(req, res) {
+        try {
+            const data = req.validatedData;
 
-        // find role by id
-        const role = await Role.findOne({ _id: data.id, status: "active" });
-        if (!role) {
-            return res
-                .status(400)
-                .send(apiError(400, i18n.__("documentNotFound")));
+            const response = await this.roleService.getRole(data);
+
+            if (response.error) {
+                return res.status(400).send(apiError(400, response.error));
+            }
+
+            res.send(
+                apiResponse(200, i18n.__("documentsFetched"), response.data)
+            );
+        } catch (error) {
+            console.log(error);
+            res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
         }
-
-        // dont allow updating admin role
-        if (role.isSuperAdminRole) {
-            return res
-                .status(400)
-                .send(apiError(400, i18n.__("cantModifyAdminRole")));
-        }
-
-        // check for duplicate role name (both en and ar)
-        const nameExists = await duplicateArEnName(Role, data.name, data.id);
-        if (nameExists) {
-            return res.status(400).send(apiError(400, i18n.__("nameExists")));
-        }
-
-        // update role name
-        role.name = data.name;
-        await role.save();
-
-        // generate response object
-        const resData = returnObject.roleObj(role);
-
-        res.send(apiResponse(200, i18n.__("documentUpdated"), resData));
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
     }
-};
 
-// delete role by id
-export const deleteRole = async (req, res) => {
-    try {
-        const data = req.validatedData;
+    async updateRoleName(req, res) {
+        try {
+            const data = req.validatedData;
 
-        // find role by id and soft delete it
-        const role = await Role.findOne({ _id: data.id, status: "active" });
-        if (!role) {
-            return res
-                .status(400)
-                .send(apiError(400, i18n.__("documentNotFound")));
+            const response = await this.roleService.updateRoleName(data);
+
+            if (response.error) {
+                return res.status(400).send(apiError(400, response.error));
+            }
+
+            res.send(
+                apiResponse(200, i18n.__("documentUpdated"), response.data)
+            );
+        } catch (error) {
+            console.log(error);
+            res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
         }
+    }
 
-        // dont allow deleting admin role
-        if (role.isSuperAdminRole) {
-            return res
-                .status(400)
-                .send(apiError(400, i18n.__("cantModifyAdminRole")));
+    async deleteRole(req, res) {
+        try {
+            const data = req.validatedData;
+
+            const response = await this.roleService.deleteRole(data);
+
+            if (response.error) {
+                return res.status(400).send(apiError(400, response.error));
+            }
+
+            res.send(
+                apiResponse(200, i18n.__("documentDeleted"), response.data)
+            );
+        } catch (error) {
+            console.log(error);
+            res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
         }
-
-        // soft delete role
-        role.status = "deleted";
-        await role.save();
-
-        // soft delete all admins with that role
-        await Admin.updateMany({ role: role._id }, { status: "deleted" });
-
-        res.send(apiResponse(200, i18n.__("documentDeleted"), {}));
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
     }
-};
 
-// get all permessions
-export const getAllPermissions = async (req, res) => {
-    try {
-        res.send(
-            apiResponse(
-                200,
-                i18n.__("documentsFetched"),
-                sharedVariable.allPermissions
-            )
-        );
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
-    }
-};
+    async getAllPermissions(req, res) {
+        try {
+            const response = this.roleService.getAllPermissions();
 
-// add permissions to role
-export const addPermissionsToRole = async (req, res) => {
-    try {
-        const data = req.validatedData;
+            if (response.error) {
+                return res.status(400).send(apiError(400, response.error));
+            }
 
-        // find role by id
-        const role = await Role.findOne({ _id: data.id, status: "active" });
-        if (!role) {
-            return res
-                .status(400)
-                .send(apiError(400, i18n.__("documentNotFound")));
+            res.send(
+                apiResponse(200, i18n.__("documentsFetched"), response.data)
+            );
+        } catch (error) {
+            console.log(error);
+            res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
         }
-
-        const newPermissions = data.permissions;
-        const currentPermissions = role.permissions;
-
-        // remove duplicates
-        const uniqueNewPermissions = newPermissions.filter(
-            (perm) => !currentPermissions.includes(perm)
-        );
-
-        // add new permissions
-        role.permissions.push(...uniqueNewPermissions);
-
-        // save
-        await role.save();
-
-        // generate response object
-        const resData = returnObject.roleObj(role);
-
-        res.send(apiResponse(200, i18n.__("documentUpdated"), resData));
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
     }
-};
 
-// remove permissions from role
-export const removePermissionsFromRole = async (req, res) => {
-    try {
-        const data = req.validatedData;
+    async addPermissionsToRole(req, res) {
+        try {
+            const data = req.validatedData;
 
-        // find role by id
-        const role = await Role.findOne({ _id: data.id, status: "active" });
-        if (!role) {
-            return res
-                .status(400)
-                .send(apiError(400, i18n.__("documentNotFound")));
+            const response = await this.roleService.addPermissionsToRole(data);
+
+            if (response.error) {
+                return res.status(400).send(apiError(400, response.error));
+            }
+
+            res.send(
+                apiResponse(200, i18n.__("documentUpdated"), response.data)
+            );
+        } catch (error) {
+            console.log(error);
+            res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
         }
-
-        // remove permissions
-        role.permissions = role.permissions.filter(
-            (perm) => !data.permissions.includes(perm)
-        );
-
-        // save
-        await role.save();
-
-        // generate response object
-        const resData = returnObject.roleObj(role);
-
-        res.send(apiResponse(200, i18n.__("documentUpdated"), resData));
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
     }
-};
+
+    async removePermissionsFromRole(req, res) {
+        try {
+            const data = req.validatedData;
+
+            const response = await this.roleService.removePermissionsFromRole(
+                data
+            );
+
+            if (response.error) {
+                return res.status(400).send(apiError(400, response.error));
+            }
+
+            res.send(
+                apiResponse(200, i18n.__("documentUpdated"), response.data)
+            );
+        } catch (error) {
+            console.log(error);
+            res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
+        }
+    }
+}
