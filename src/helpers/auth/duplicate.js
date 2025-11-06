@@ -1,21 +1,20 @@
 // checks if a field value is duplicated in the database
-const duplicate = async (model, fieldName, fieldValue, updateId) => {
-    let user = null;
-    // if the action is update then we exclude the current document from the check
-    if (updateId) {
-        user = await model.findOne({
+const duplicate = async (models, fieldName, fieldValue, updateId) => {
+    // make sure models is an array
+    if (!Array.isArray(models)) models = [models];
+
+    for (const model of models) {
+        const query = {
             [fieldName]: fieldValue,
             status: { $ne: "deleted" },
-            _id: { $ne: updateId },
-        });
-        // the action is create
-    } else {
-        user = await model.findOne({
-            [fieldName]: fieldValue,
-            status: { $ne: "deleted" },
-        });
+        };
+
+        if (updateId) query._id = { $ne: updateId };
+
+        const found = await model.findOne(query).lean().select("_id");
+        if (found) return found; // stop at first match
     }
-    return user;
+    return null;
 };
 
 export default duplicate;
