@@ -1,4 +1,3 @@
-import i18n from "i18n";
 import moment from "moment";
 
 import { sharedVariable } from "../index.js";

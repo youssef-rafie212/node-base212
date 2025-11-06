@@ -1,5 +1,5 @@
 import i18n from "i18n";
-import { body, query, param, check } from "express-validator";
+import { body} from "express-validator";
 
 export class SettingsValidation {
     validateUpdateSettings() {
