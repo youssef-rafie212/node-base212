@@ -7,11 +7,12 @@ import {
 } from "../../middlewares/index.js";
 import { NotificationController } from "../../controllers/dashboard/index.js";
 import { NotificationService } from "../../services/dashboard/index.js";
-import { notificationValidation } from "../../validation/dashboard/index.js";
+import { NotificationValidation } from "../../validation/dashboard/index.js";
 import { doubleCsrfProtection } from "../../utils/index.js";
 
 const router = express.Router();
 
+const notificationValidation = new NotificationValidation();
 const notificationService = new NotificationService();
 const notificationController = new NotificationController(notificationService);
 

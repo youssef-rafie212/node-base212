@@ -1,2 +1,2 @@
-export * as authValidation from "./auth.js";
-export * as userValidation from "./user.js";
+export { AuthValidation } from "./auth.js";
+export { UserValidation } from "./user.js";

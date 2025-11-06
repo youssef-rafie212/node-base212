@@ -2,7 +2,7 @@ import express from "express";
 
 import { AdminController } from "../../controllers/dashboard/index.js";
 import { AdminService } from "../../services/dashboard/index.js";
-import { adminValidation } from "../../validation/dashboard/index.js";
+import { AdminValidation } from "../../validation/dashboard/index.js";
 import {
     authenticateAdmin,
     validateRequest,
@@ -12,6 +12,7 @@ import { doubleCsrfProtection } from "../../utils/index.js";
 
 const router = express.Router();
 
+const adminValidation = new AdminValidation();
 const adminService = new AdminService();
 const adminController = new AdminController(adminService);
 

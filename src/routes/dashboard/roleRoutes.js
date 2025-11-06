@@ -2,7 +2,7 @@ import express from "express";
 
 import { RoleController } from "../../controllers/dashboard/index.js";
 import { RoleService } from "../../services/dashboard/index.js";
-import { roleValidation } from "../../validation/dashboard/index.js";
+import { RoleValidation } from "../../validation/dashboard/index.js";
 import {
     authenticateAdmin,
     validateRequest,
@@ -12,6 +12,7 @@ import { doubleCsrfProtection } from "../../utils/index.js";
 
 const router = express.Router();
 
+const roleValidation = new RoleValidation();
 const roleService = new RoleService();
 const roleController = new RoleController(roleService);
 

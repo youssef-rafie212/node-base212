@@ -8,10 +8,11 @@ import {
 import { SettingsController } from "../../controllers/dashboard/index.js";
 import { SettingsService } from "../../services/dashboard/index.js";
 import { doubleCsrfProtection } from "../../utils/index.js";
-import { settingsValidation } from "../../validation/dashboard/index.js";
+import { SettingsValidation } from "../../validation/dashboard/index.js";
 
 const router = express.Router();
 
+const settingsValidation = new SettingsValidation();
 const settingsService = new SettingsService();
 const settingsController = new SettingsController(settingsService);
 
