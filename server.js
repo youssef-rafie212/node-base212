@@ -14,10 +14,11 @@ import {
 dotenv.config();
 
 import app from "./src/app.js";
+import { DbConfig, ServerConfig } from "./config/index.js";
 
 // db connection
 mongoose
-    .connect(process.env.DB_URI || "mongodb://localhost:27017/base")
+    .connect(DbConfig.dbUri)
     .then(() => {
         console.log("MongoDB connected");
 
@@ -31,10 +32,10 @@ mongoose
 // server
 let server;
 
-if (process.env.ENABLE_HTTPS === "true") {
-    const privateKey = fs.readFileSync(process.env.HTTPS_PRIVATE_KEY, "utf8");
-    const certificate = fs.readFileSync(process.env.HTTPS_CERTIFICATE, "utf8");
-    const ca = fs.readFileSync(process.env.HTTPS_CA, "utf8");
+if (ServerConfig.enableHttps) {
+    const privateKey = fs.readFileSync(ServerConfig.httpsPrivateKey, "utf8");
+    const certificate = fs.readFileSync(ServerConfig.httpsCertificate, "utf8");
+    const ca = fs.readFileSync(ServerConfig.httpsCA, "utf8");
 
     server = https.createServer(
         { key: privateKey, cert: certificate, ca },
@@ -54,6 +55,7 @@ export const socketServer = await socketManager.initializeSocket(server, app);
 initializeFirebase();
 
 // start server
-server.listen(process.env.PORT || 3000, () => {
-    console.log(`Server is running on port ${process.env.PORT || 3000}`);
+const port = ServerConfig.port;
+server.listen(port, () => {
+    console.log(`Server is running on port ${port || 3000}`);
 });

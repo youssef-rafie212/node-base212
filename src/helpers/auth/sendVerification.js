@@ -28,12 +28,12 @@ export const sendVerificationByEmail = async (
 };
 
 // sends OTP verification by SMS
-export const sendVerificationBySMS = async (phoneNumber, messageKey) => {
+export const sendVerificationBySMS = async (phoneNumber) => {
     // generate a new OTP
     const otp = generateCode.generateOtp();
 
     // send the SMS
-    await sendSMS(phoneNumber, i18n.__(messageKey, { otp }));
+    await sendSMS(phoneNumber, otp);
 
     return otp;
 };

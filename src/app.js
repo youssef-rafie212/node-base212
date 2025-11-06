@@ -17,6 +17,7 @@ import {
     initializeRoutes,
 } from "./utils/index.js";
 import { loggerMiddleware } from "./middlewares/index.js";
+import { ServerConfig } from "../config/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -63,9 +64,7 @@ app.use(loggerMiddleware);
 // cors configuration
 app.use(
     cors({
-        origin: process.env.ALLOWED_ORIGINS
-            ? process.env.ALLOWED_ORIGINS.split(",")
-            : ["http://localhost:3000", "http://127.0.0.1:3000"],
+        origin: ServerConfig.allowedOrigins,
         methods: ["GET", "POST", "PATCH", "DELETE"],
         credentials: true,
     })

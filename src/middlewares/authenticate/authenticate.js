@@ -4,6 +4,7 @@ import i18n from "i18n";
 import { UserToken } from "../../models/index.js";
 import { getModel } from "../../helpers/index.js";
 import { apiError } from "../../utils/index.js";
+import { JwtConfig } from "../../../config/index.js";
 
 // middleware that protects routes and authenticates the user
 const authenticate =
@@ -21,53 +22,49 @@ const authenticate =
             }
 
             // verify the token
-            jwt.verify(
-                token,
-                process.env.JWT_SECRET || "default_secret",
-                async (err, decoded) => {
-                    if (err) {
-                        return res
-                            .status(401)
-                            .send(apiError(401, i18n.__("unauthorized")));
-                    }
-
-                    // check if the token exists in the database
-                    const userToken = await UserToken.findOne({
-                        token,
-                    });
-                    if (!userToken) {
-                        return res
-                            .status(401)
-                            .send(apiError(401, i18n.__("unauthorized")));
-                    }
-
-                    // get model based on type
-                    const model = getModel(decoded.userType);
-
-                    // find user by id
-                    const user = await model.findById(decoded.id);
-
-                    // validate the user
-                    if (
-                        !user ||
-                        user.status !== "active" ||
-                        !user.isVerified ||
-                        (!allowNotCompletedData && !user.dataCompleted)
-                    ) {
-                        // delete current token
-                        UserToken.deleteOne({ token });
-
-                        return res
-                            .status(401)
-                            .send(apiError(401, i18n.__("unauthorized")));
-                    }
-
-                    // assign the decoded token to the request
-                    req.sub = decoded;
-
-                    next();
+            jwt.verify(token, JwtConfig.secret, async (err, decoded) => {
+                if (err) {
+                    return res
+                        .status(401)
+                        .send(apiError(401, i18n.__("unauthorized")));
                 }
-            );
+
+                // check if the token exists in the database
+                const userToken = await UserToken.findOne({
+                    token,
+                });
+                if (!userToken) {
+                    return res
+                        .status(401)
+                        .send(apiError(401, i18n.__("unauthorized")));
+                }
+
+                // get model based on type
+                const model = getModel(decoded.userType);
+
+                // find user by id
+                const user = await model.findById(decoded.id);
+
+                // validate the user
+                if (
+                    !user ||
+                    user.status !== "active" ||
+                    !user.isVerified ||
+                    (!allowNotCompletedData && !user.dataCompleted)
+                ) {
+                    // delete current token
+                    UserToken.deleteOne({ token });
+
+                    return res
+                        .status(401)
+                        .send(apiError(401, i18n.__("unauthorized")));
+                }
+
+                // assign the decoded token to the request
+                req.sub = decoded;
+
+                next();
+            });
         } catch (error) {
             res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
         }

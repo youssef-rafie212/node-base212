@@ -1,33 +1,42 @@
 import axios from "axios";
+import { AuthenticaConfig } from "../../../config/index.js";
 
 // send sms to a phone number
-const sendSMS = async (to, message) => {
+const sendSMS = async (phoneNumber, otp) => {
     try {
-        // validate the sms configuration
-        if (
-            !process.env.SMS_API_URL ||
-            !process.env.SMS_USER ||
-            !process.env.SMS_SECRET_KEY
-        ) {
-            return false;
+        // Ensure phone number has proper format with country code
+        let formattedPhone = phoneNumber;
+
+        // If phone doesn't start with +, add Saudi Arabia country code
+        if (!phoneNumber.startsWith("+")) {
+            // Remove any leading zeros and add +966 (Saudi Arabia)
+            formattedPhone = `+966${phoneNumber.replace(/^0+/, "")}`;
         }
 
-        // remove "+966" prefix if present
-        const cleanedTo = to.startsWith("+966") ? to.replace("+966", "") : to;
+        console.log(`Sending OTP to: ${formattedPhone}`);
 
-        // construct request url
-        const requestUrl = `${process.env.SMS_API_URL}/?secret_key=${
-            process.env.SMS_SECRET_KEY
-        }&user=${process.env.SMS_USER}&to=${encodeURIComponent(
-            cleanedTo
-        )}&message=${encodeURIComponent(message)}&sender=${encodeURIComponent(
-            process.env.SMS_SENDER
-        )}&test=${process.env.SMS_TEST_MODE === "true" ? 1 : 0}`;
+        const requestData = {
+            method: "sms",
+            phone: formattedPhone,
+            template_id: 31, // Use the template_id from the example
+            fallback_email: "youssefelbosaty3@gmail.com",
+            otp: otp,
+        };
 
-        // send the sms
-        const response = await axios.get(requestUrl, {
-            headers: { "Content-Type": "application/json" },
-        });
+        console.log("Request data:", requestData);
+
+        const response = await axios.post(
+            "https://api.authentica.sa/api/v2/send-otp",
+            requestData,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                    "X-Authorization": AuthenticaConfig.apiKey,
+                },
+                timeout: 10000, // 10 second timeout
+            }
+        );
 
         return response.data;
     } catch (error) {

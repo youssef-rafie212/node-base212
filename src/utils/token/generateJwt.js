@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import { JwtConfig } from "../../../config/index.js";
 
 // generate a jwt
 const generateJwt = (id, userType = "user") => {
@@ -7,7 +8,7 @@ const generateJwt = (id, userType = "user") => {
             id,
             userType: userType,
         },
-        process.env.JWT_SECRET || "default_secret"
+        JwtConfig.secret
     );
 
     return token;

@@ -1,9 +1,10 @@
 import redis from "redis";
+import { RedisConfig } from "../../../config/index.js";
 
 // initialize redis client
 export const initializeRedis = async () => {
     const client = redis.createClient({
-        url: process.env.REDIS_URL || "redis://localhost:6379",
+        url: RedisConfig.url,
     });
 
     client.on("error", (err) => {

@@ -1,11 +1,12 @@
 import dotenv from "dotenv";
+import { ServerConfig } from "../../../config/index.js";
 
 dotenv.config();
 
 export const address =
-    process.env.NODE_ENV === "development"
-        ? process.env.ADDRESS_DEVELOPMENT || "http://127.0.0.1:3000"
-        : process.env.ADDRESS_PRODUCTION || "https://base.com";
+    ServerConfig.env === "development"
+        ? ServerConfig.developmentAddress || "http://127.0.0.1:3000"
+        : ServerConfig.productionAddress || "https://base.com";
 export const usersImage = "/assets/uploads/users/";
 export const brandImage = "/assets/uploads/brands/";
 export const supervisorsImage = "/assets/uploads/supervisors/";

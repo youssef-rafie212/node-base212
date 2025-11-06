@@ -1,22 +1,23 @@
 import nodemailer from "nodemailer";
+import { EmailConfig } from "../../../config/index.js";
 
 // send emails using nodemailer
 const sendEmail = async ({ to, subject, text, html }) => {
     try {
         // create a transporter
         const transporter = nodemailer.createTransport({
-            host: process.env.EMAIL_HOST,
-            port: process.env.EMAIL_PORT,
-            secure: process.env.EMAIL_SECURE === "true",
+            host: EmailConfig.host,
+            port: EmailConfig.port,
+            secure: EmailConfig.secure,
             auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS,
+                user: EmailConfig.user,
+                pass: EmailConfig.password,
             },
         });
 
         // send the email
         const info = await transporter.sendMail({
-            from: `"${process.env.EMAIL_FROM_NAME}" <${process.env.EMAIL_USER}>`,
+            from: `"${EmailConfig.from}" <${EmailConfig.user}>`,
             to,
             subject,
             text,

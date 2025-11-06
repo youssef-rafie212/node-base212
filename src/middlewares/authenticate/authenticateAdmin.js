@@ -3,6 +3,7 @@ import i18n from "i18n";
 
 import { Admin } from "../../models/index.js";
 import { apiError } from "../../utils/index.js";
+import { JwtConfig } from "../../../config/index.js";
 
 // middleware that protects routes and authenticates the user
 const authenticateAdmin = (req, res, next) => {
@@ -16,32 +17,28 @@ const authenticateAdmin = (req, res, next) => {
         }
 
         // verify the token
-        jwt.verify(
-            token,
-            process.env.JWT_SECRET || "default_secret",
-            async (err, decoded) => {
-                if (err) {
-                    return res
-                        .status(401)
-                        .send(apiError(401, i18n.__("unauthorized")));
-                }
-
-                // find user by id
-                const admin = await Admin.findById(decoded.id);
-
-                // validate the user
-                if (!admin || admin.status !== "active") {
-                    return res
-                        .status(401)
-                        .send(apiError(401, i18n.__("unauthorized")));
-                }
-
-                // assign the decoded token to the request
-                req.admin = decoded;
-
-                next();
+        jwt.verify(token, JwtConfig.secret, async (err, decoded) => {
+            if (err) {
+                return res
+                    .status(401)
+                    .send(apiError(401, i18n.__("unauthorized")));
             }
-        );
+
+            // find user by id
+            const admin = await Admin.findById(decoded.id);
+
+            // validate the user
+            if (!admin || admin.status !== "active") {
+                return res
+                    .status(401)
+                    .send(apiError(401, i18n.__("unauthorized")));
+            }
+
+            // assign the decoded token to the request
+            req.admin = decoded;
+
+            next();
+        });
     } catch (error) {
         res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
     }

@@ -1,23 +1,24 @@
 import axios from "axios";
 import crypto from "crypto";
+import { PaymobConfig } from "../../../config/index.js";
 
 // Paymob configuration
-const PAYMOB_MODE = process.env.PAYMOB_STATUS || "test";
-const PAYMOB_API_KEY = process.env.PAYMOB_API_KEY;
-const PAYMOB_HMAC = process.env.PAYMOB_HMAC;
-const PAYMOB_BASE_URL = process.env.PAYMOB_BASE_URL;
-const PAYMOB_IFRAME_ID = process.env.PAYMOB_IFRAME_ID;
-const PAYMOB_INTEGRATION_ID_TEST = process.env.PAYMOB_INTEGRATION_ID_TEST;
+const PAYMOB_MODE = PaymobConfig.mode || "test";
+const PAYMOB_API_KEY = PaymobConfig.apiKey;
+const PAYMOB_HMAC = PaymobConfig.hmac;
+const PAYMOB_BASE_URL = PaymobConfig.baseUrl;
+const PAYMOB_IFRAME_ID = PaymobConfig.iframeId;
+const PAYMOB_INTEGRATION_ID_TEST = PaymobConfig.integrationIdTest;
 
 const PAYMOB_SECRET_KEY =
     PAYMOB_MODE === "test"
-        ? process.env.PAYMOB_SECRET_KEY_TEST
-        : process.env.PAYMOB_SECRET_KEY_LIVE;
+        ? PaymobConfig.secretKeyTest
+        : PaymobConfig.secretKeyLive;
 
 const PAYMOB_PUBLIC_KEY =
     PAYMOB_MODE === "test"
-        ? process.env.PAYMOB_PUBLIC_KEY_TEST
-        : process.env.PAYMOB_PUBLIC_KEY_LIVE;
+        ? PaymobConfig.publicKeyTest
+        : PaymobConfig.publicKeyLive;
 
 // authenticate with paymob and get access token
 export async function authenticate() {

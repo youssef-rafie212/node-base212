@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import { UserToken, ChatRoom, ChatMessage } from "../../models/index.js";
 import { returnObject } from "../../utils/index.js";
 import { getModel, getRef } from "../../helpers/index.js";
+import { JwtConfig, ServerConfig } from "../../../config/index.js";
 
 let io;
 export const connectedUsers = new Map(); // store connected users (fallback when Redis is unavailable)
@@ -20,9 +21,7 @@ export const getUserSocket = (userId) => {
 export const initializeSocket = async (server, app) => {
     io = new Server(server, {
         cors: {
-            origin: process.env.ALLOWED_ORIGINS
-                ? process.env.ALLOWED_ORIGINS.split(",")
-                : ["http://localhost:3000", "http://127.0.0.1:3000"],
+            origin: ServerConfig.allowedOrigins,
             methods: ["GET", "POST"],
             credentials: true,
         },
@@ -41,7 +40,7 @@ export const initializeSocket = async (server, app) => {
             }
 
             // verify JWT
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const decoded = jwt.verify(token, JwtConfig.secret);
 
             // get model based on type
             const model = getModel(decoded.userType);

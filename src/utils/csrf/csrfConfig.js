@@ -1,15 +1,16 @@
 import { doubleCsrf } from "csrf-csrf";
+import { CsrfConfig, ServerConfig } from "../../../config/index.js";
 
 // this file configures csrf protection using the csrf-csrf library.
 const { invalidCsrfTokenError, generateCsrfToken, doubleCsrfProtection } =
     doubleCsrf({
-        getSecret: () => process.env.CSRF_SECRET || "tamerElgayar",
+        getSecret: () => CsrfConfig.secret,
         cookieName: "csrf",
         cookieOptions: {
             httpOnly: true,
             sameSite: "lax",
             path: "/",
-            secure: process.env.NODE_ENV === "production",
+            secure: ServerConfig.env,
             maxAge: 3600000, // 1 hour
         },
         size: 64,
