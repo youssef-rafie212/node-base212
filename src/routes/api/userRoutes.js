@@ -1,10 +1,14 @@
 import express from "express";
 
-import { userController } from "../../controllers/api/index.js";
+import { UserController } from "../../controllers/api/index.js";
+import { UserService } from "../../services/api/index.js";
 import { userValidation } from "../../validation/api/index.js";
 import { authenticate, validateRequest } from "../../middlewares/index.js";
 
 const router = express.Router();
+
+const userService = new UserService();
+const userController = new UserController(userService);
 
 router
     .route("/me")
@@ -16,13 +20,5 @@ router
         userController.updateMe
     )
     .delete(authenticate(), userController.deleteMe);
-
-router.patch(
-    "/me/language",
-    authenticate(),
-    userValidation.validateUpdateLanguage,
-    validateRequest,
-    userController.updateLanguage
-);
 
 export default router;

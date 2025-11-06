@@ -5,11 +5,15 @@ import {
     authorize,
     validateRequest,
 } from "../../middlewares/index.js";
-import { settingsController } from "../../controllers/dashboard/index.js";
+import { SettingsController } from "../../controllers/dashboard/index.js";
+import { SettingsService } from "../../services/dashboard/index.js";
 import { doubleCsrfProtection } from "../../utils/index.js";
 import { settingsValidation } from "../../validation/dashboard/index.js";
 
 const router = express.Router();
+
+const settingsService = new SettingsService();
+const settingsController = new SettingsController(settingsService);
 
 router.get("/get-settings", authenticateAdmin, settingsController.getSettings);
 

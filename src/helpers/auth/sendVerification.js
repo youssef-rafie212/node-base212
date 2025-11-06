@@ -1,7 +1,7 @@
 import i18n from "i18n";
 
 import { generateCode } from "../../utils/index.js";
-import { sendEmail, sendSMS } from "../../external-services/index.js";
+import { sendEmail, sendSMS } from "../../externalServices/index.js";
 
 // sends OTP verification by email
 export const sendVerificationByEmail = async (

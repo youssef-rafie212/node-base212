@@ -1,16 +1,20 @@
 import express from "express";
 
-import { authController } from "../../controllers/api/index.js";
+import { AuthController } from "../../controllers/api/index.js";
+import { AuthService } from "../../services/api/index.js";
 import { authValidation } from "../../validation/api/index.js";
 import { authenticate, validateRequest } from "../../middlewares/index.js";
 
 const router = express.Router();
 
+const authService = new AuthService();
+const authController = new AuthController(authService);
+
 router.post(
     "/sign-up",
     authValidation.validateSignUp,
     validateRequest,
-    authController.signUp
+    authController.signup
 );
 
 router.post(
@@ -25,20 +29,6 @@ router.post(
     authValidation.validateRequestOtp,
     validateRequest,
     authController.requestOtp
-);
-
-router.post(
-    "/request-otp-email",
-    authValidation.validateRequestOtpEmail,
-    validateRequest,
-    authController.requestOtpEmail
-);
-
-router.post(
-    "/request-otp-phone",
-    authValidation.validateRequestOtpPhone,
-    validateRequest,
-    authController.requestOtpPhone
 );
 
 router.post(

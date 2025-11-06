@@ -1,6 +1,7 @@
 import i18n from "i18n";
 
 import { apiError, apiResponse } from "../../utils/index.js";
+import { AuthService } from "../../services/api/authService.js";
 
 export class AuthController {
     constructor(authService) {

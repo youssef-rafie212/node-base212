@@ -1,6 +1,7 @@
 import express from "express";
 
-import { adminController } from "../../controllers/dashboard/index.js";
+import { AdminController } from "../../controllers/dashboard/index.js";
+import { AdminService } from "../../services/dashboard/index.js";
 import { adminValidation } from "../../validation/dashboard/index.js";
 import {
     authenticateAdmin,
@@ -10,6 +11,9 @@ import {
 import { doubleCsrfProtection } from "../../utils/index.js";
 
 const router = express.Router();
+
+const adminService = new AdminService();
+const adminController = new AdminController(adminService);
 
 router.post(
     "/create-new-admin",

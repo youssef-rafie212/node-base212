@@ -1,7 +1,7 @@
 import i18n from "i18n";
 
 import { getModel } from "../../helpers/index.js";
-import { handleNotification } from "../../external-services/index.js";
+import { handleNotification } from "../../externalServices/index.js";
 
 export class NotificationService {
     async sendSingleNotification(data) {

@@ -1,6 +1,7 @@
 import express from "express";
 
-import { roleController } from "../../controllers/dashboard/index.js";
+import { RoleController } from "../../controllers/dashboard/index.js";
+import { RoleService } from "../../services/dashboard/index.js";
 import { roleValidation } from "../../validation/dashboard/index.js";
 import {
     authenticateAdmin,
@@ -10,6 +11,9 @@ import {
 import { doubleCsrfProtection } from "../../utils/index.js";
 
 const router = express.Router();
+
+const roleService = new RoleService();
+const roleController = new RoleController(roleService);
 
 router.post(
     "/create-role",

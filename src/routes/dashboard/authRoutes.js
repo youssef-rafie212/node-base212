@@ -1,13 +1,16 @@
 import express from "express";
 
-import { authController } from "../../controllers/dashboard/index.js";
+import { AuthController } from "../../controllers/dashboard/index.js";
+import { AuthService } from "../../services/dashboard/index.js";
 import { authValidation } from "../../validation/dashboard/index.js";
-import { authenticateAdmin, validateRequest } from "../../middlewares/index.js";
-import { doubleCsrfProtection } from "../../utils/index.js";
+import { validateRequest } from "../../middlewares/index.js";
+
+const authService = new AuthService();
+const authController = new AuthController(authService);
 
 const router = express.Router();
 
-router.get("/get-csrf-token", authController.getCsrfToken);
+router.get("/get-csrf-token", authController.getCsrf);
 
 router.post(
     "/sign-in",

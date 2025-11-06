@@ -1,6 +1,7 @@
 import express from "express";
 
-import { userController } from "../../controllers/dashboard/index.js";
+import { UserController } from "../../controllers/dashboard/index.js";
+import { UserService } from "../../services/dashboard/index.js";
 import { userValidation } from "../../validation/dashboard/index.js";
 import {
     authenticateAdmin,
@@ -10,6 +11,9 @@ import {
 import { doubleCsrfProtection } from "../../utils/index.js";
 
 const router = express.Router();
+
+const userService = new UserService();
+const userController = new UserController(userService);
 
 router.post(
     "/create-new-user",
