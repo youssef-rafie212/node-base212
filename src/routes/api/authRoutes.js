@@ -13,49 +13,42 @@ const authController = new AuthController(authService);
 
 router.post(
     "/sign-up",
-    authValidation.validateSignUp,
+    authValidation.validateSignUp(),
     validateRequest,
     authController.signup
 );
 
 router.post(
     "/local-sign-in",
-    authValidation.validateLocalSignIn,
+    authValidation.validateLocalSignIn(),
     validateRequest,
     authController.localSignIn
 );
 
 router.post(
     "/request-otp",
-    authValidation.validateRequestOtp,
+    authValidation.validateRequestOtp(),
     validateRequest,
     authController.requestOtp
 );
 
 router.post(
-    "/verify-email",
-    authValidation.validateVerifyEmail,
+    "/verify-otp",
+    authValidation.validateVerifyOtp(),
     validateRequest,
-    authController.verifyEmail
-);
-
-router.post(
-    "/verify-phone",
-    authValidation.validateVerifyPhone,
-    validateRequest,
-    authController.verifyPhone
+    authController.verifyOtp
 );
 
 router.post(
     "/reset-password",
-    authValidation.validateResetPassword,
+    authValidation.validateResetPassword(),
     validateRequest,
     authController.resetPassword
 );
 
 router.post(
     "/social-sign-in",
-    authValidation.validateSocialSignIn,
+    authValidation.validateSocialSignIn(),
     validateRequest,
     authController.socialSignIn
 );
@@ -63,16 +56,9 @@ router.post(
 router.post(
     "/complete-data",
     authenticate(true),
-    authValidation.validateCompleteData,
+    authValidation.validateCompleteData(),
     validateRequest,
     authController.completeData
-);
-
-router.post(
-    "/verify-reset-otp",
-    authValidation.validateVerifyOtp,
-    validateRequest,
-    authController.verifyResetOtp
 );
 
 router.post("/sign-out", authenticate(), authController.signOut);

@@ -16,7 +16,7 @@ router
     .get(authenticate(), userController.me)
     .patch(
         authenticate(),
-        userValidation.validateUpdateMe,
+        userValidation.validateUpdateMe(),
         validateRequest,
         userController.updateMe
     )

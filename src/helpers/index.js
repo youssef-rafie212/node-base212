@@ -6,6 +6,7 @@ export { default as getRef } from "./refMap/refMap.js";
 export { validateCountryExists } from "./country/validateCountry.js";
 export { duplicateArEnName } from "./names/duplicateArEnName.js";
 export { validateRole } from "./admin/validateRole.js";
+export { getUserWithIdentifier } from "./auth/getUserWithIdentifier.js";
 export * as userAvatars from "./user/avatars.js";
 export * as devices from "./auth/devices.js";
 export * as otps from "./auth/otps.js";

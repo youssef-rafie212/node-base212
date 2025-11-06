@@ -117,6 +117,13 @@ export class AuthValidation {
 
     validateRequestOtp() {
         return [
+            body("type")
+                .trim()
+                .notEmpty()
+                .withMessage(() => i18n.__("typeRequired"))
+                .isIn(["user"])
+                .withMessage(() => i18n.__("invalidType")),
+
             body("identifier")
                 .trim()
                 .notEmpty()
@@ -128,6 +135,13 @@ export class AuthValidation {
 
     validateLocalSignIn() {
         return [
+            body("type")
+                .trim()
+                .notEmpty()
+                .withMessage(() => i18n.__("typeRequired"))
+                .isIn(["user"])
+                .withMessage(() => i18n.__("invalidType")),
+                
             body("email")
                 .optional()
                 .trim()
@@ -179,32 +193,7 @@ export class AuthValidation {
         ];
     }
 
-    validateVerifyEmail() {
-        [
-            body("type")
-                .trim()
-                .notEmpty()
-                .withMessage(() => i18n.__("typeRequired"))
-                .isIn(["user"])
-                .withMessage(() => i18n.__("invalidType")),
-
-            body("email")
-                .trim()
-                .notEmpty()
-                .withMessage(() => i18n.__("emailRequired"))
-                .isEmail()
-                .withMessage(() => i18n.__("invalidEmail")),
-
-            body("otp")
-                .trim()
-                .notEmpty()
-                .withMessage(() => i18n.__("otpRequired"))
-                .isLength({ min: 6, max: 6 })
-                .withMessage(() => i18n.__("invalidOtp")),
-        ];
-    }
-
-    validateVerifyPhone() {
+    validateCompleteData() {
         return [
             body("type")
                 .trim()
@@ -212,29 +201,25 @@ export class AuthValidation {
                 .withMessage(() => i18n.__("typeRequired"))
                 .isIn(["user"])
                 .withMessage(() => i18n.__("invalidType")),
-
-            body("phone")
-                .trim()
-                .notEmpty()
-                .withMessage(() => i18n.__("phoneRequired"))
-                .isMobilePhone("any")
-                .withMessage(() => i18n.__("invalidPhone")),
-
-            body("otp")
-                .trim()
-                .notEmpty()
-                .withMessage(() => i18n.__("otpRequired"))
-                .isLength({ min: 6, max: 6 })
-                .withMessage(() => i18n.__("invalidOtp")),
         ];
-    }
-
-    validateCompleteData() {
-        return [];
     }
 
     validateVerifyOtp() {
         return [
+            body("type")
+                .trim()
+                .notEmpty()
+                .withMessage(() => i18n.__("typeRequired"))
+                .isIn(["user"])
+                .withMessage(() => i18n.__("invalidType")),
+
+            body("reason")
+                .trim()
+                .notEmpty()
+                .withMessage(() => i18n.__("reasonRequired"))
+                .isIn(["verify", "reset"])
+                .withMessage(() => i18n.__("invalidReason")),
+
             body("identifier")
                 .trim()
                 .notEmpty()
@@ -253,6 +238,13 @@ export class AuthValidation {
 
     validateResetPassword() {
         return [
+            body("type")
+                .trim()
+                .notEmpty()
+                .withMessage(() => i18n.__("typeRequired"))
+                .isIn(["user"])
+                .withMessage(() => i18n.__("invalidType")),
+
             body("identifier")
                 .trim()
                 .notEmpty()

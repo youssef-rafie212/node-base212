@@ -5,6 +5,9 @@ import { apiError, apiResponse } from "../../utils/index.js";
 export class StatsController {
     constructor(statsService) {
         this.statsService = statsService;
+
+        // bind all methods
+        this.getStats = this.getStats.bind(this);
     }
 
     async getStats(req, res) {

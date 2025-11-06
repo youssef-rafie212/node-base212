@@ -5,6 +5,10 @@ import { apiResponse, apiError } from "../../utils/index.js";
 export class SettingsController {
     constructor(settingsService) {
         this.settingsService = settingsService;
+
+        // bind all methods
+        this.getSettings = this.getSettings.bind(this);
+        this.updateSettings = this.updateSettings.bind(this);
     }
 
     async getSettings(req, res) {

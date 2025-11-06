@@ -21,7 +21,7 @@ router.post(
     doubleCsrfProtection,
     authenticateAdmin,
     authorize,
-    adminValidation.validateCreateAdmin,
+    adminValidation.validateCreateAdmin(),
     validateRequest,
     adminController.createAdmin
 );
@@ -37,7 +37,7 @@ router.get(
     "/get-admin",
     authenticateAdmin,
     authorize,
-    adminValidation.validateGetAdminById,
+    adminValidation.validateGetAdminById(),
     validateRequest,
     adminController.getAdmin
 );
@@ -47,7 +47,7 @@ router.patch(
     doubleCsrfProtection,
     authenticateAdmin,
     authorize,
-    adminValidation.validateUpdateAdmin,
+    adminValidation.validateUpdateAdmin(),
     validateRequest,
     adminController.updateAdmin
 );
@@ -57,7 +57,7 @@ router.delete(
     doubleCsrfProtection,
     authenticateAdmin,
     authorize,
-    adminValidation.validateDeleteAdminById,
+    adminValidation.validateDeleteAdminById(),
     validateRequest,
     adminController.deleteAdmin
 );
@@ -67,7 +67,7 @@ router.patch(
     doubleCsrfProtection,
     authenticateAdmin,
     authorize,
-    adminValidation.validateToggleBlockAdminById,
+    adminValidation.validateToggleBlockAdminById(),
     validateRequest,
     adminController.toggleBlockAdmin
 );

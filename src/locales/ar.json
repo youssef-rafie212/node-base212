@@ -101,5 +101,7 @@
     "otpVerified": "تم التحقق من رمز التفعيل بنجاح.",
     "invalidIdentifier": "المعرف غير صالح.",
     "invalidOldPassword": "كلمة المرور القديمة غير صحيحة.",
-    "passwordUpdated": "تم تحديث كلمة المرور بنجاح."
+    "passwordUpdated": "تم تحديث كلمة المرور بنجاح.",
+    "reasonRequired": "السبب مطلوب.",
+    "invalidReason": "السبب غير صالح."
 }

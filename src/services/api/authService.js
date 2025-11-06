@@ -5,14 +5,15 @@ import { returnObject } from "../../utils/index.js";
 import {
     getModel,
     duplicate,
-    sendVerification,
     devices,
     tokens,
     userAvatars,
     otps,
     afterAuth,
     validateCountryExists,
+    getUserWithIdentifier,
 } from "../../helpers/index.js";
+import { sendOtpWithIdentifier } from "../../helpers/auth/sendOtpWithIdentifier.js";
 
 export class AuthService {
     async signup(data, req) {
@@ -91,81 +92,69 @@ export class AuthService {
         // get model based on type
         const model = getModel(data.type);
 
-        // detect (email / phone)
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const phoneRegex = /^\+?[0-9]{7,15}$/;
+        const user = await getUserWithIdentifier(model, data.identifier);
 
-        let user = null;
-        let otp = null;
-
-        if (emailRegex.test(data.identifier)) {
-            // handle email
-            user = await model.findOne({
-                email: data.identifier,
-                status: "active",
-            });
-            if (!user) {
-                return {
-                    error: i18n.__("userNotFound"),
-                    data: null,
-                };
-            }
-
-            otp = await sendVerification.sendVerificationByEmail(
-                user.email,
-                "otpSentEmail",
-                "otpSentEmailText",
-                "otpSentEmailHtml"
-            );
-
-            otps.setOtp(user, otp);
-            await user.save();
-
+        if (!user) {
             return {
-                error: null,
-                data: {
-                    email: user.email,
-                },
+                error: i18n.__("userNotFound"),
+                data: null,
             };
-        } else if (phoneRegex.test(data.identifier)) {
-            // handle phone otp
-            user = await model.findOne({
-                phone: data.identifier,
-                status: "active",
-            });
-            if (!user) {
-                return {
-                    error: i18n.__("userNotFound"),
-                    data: null,
-                };
-            }
+        }
 
-            const { otp: smsOtp, smsResponse } =
-                await sendVerification.sendVerificationBySMS(user.phone);
+        const otp = await sendOtpWithIdentifier(data.identifier);
 
-            if (!smsResponse) {
-                return {
-                    error: i18n.__("smsNotSent"),
-                    data: null,
-                };
-            }
-
-            otps.setOtp(user, smsOtp);
-            await user.save();
-
-            return {
-                error: null,
-                data: {
-                    phone: user.phone,
-                },
-            };
-        } else {
-            // invalid input
+        if (!otp) {
             return {
                 error: i18n.__("invalidIdentifier"),
                 data: null,
             };
         }
+
+        otps.setOtp(user, otp);
+
+        await user.save();
+
+        return {
+            error: null,
+            data: {},
+        };
+    }
+
+    async verifyOtp(data) {
+        // get model based on type
+        const model = getModel(data.type);
+
+        const user = await getUserWithIdentifier(model, data.identifier);
+
+        // validate the otp
+        const validOtp = otps.isOtpValid(user, data.otp);
+
+        if (!validOtp) {
+            return {
+                error: i18n.__("invalidOtp"),
+                data: null,
+            };
+        }
+
+        // update the user based on the reason
+        if (data.reason === "verify") {
+            user.isVerified = true;
+            await model.updateOne(
+                { _id: user._id },
+                { $unset: { expireAt: "" } }
+            );
+        } else if (data.reason === "reset") {
+            user.canReset = true;
+        }
+
+        otps.resetOtp(user);
+
+        await user.save();
+
+        return {
+            error: null,
+            data: {},
+        };
     }
 
     async localSignIn(data) {
@@ -309,98 +298,6 @@ export class AuthService {
         };
     }
 
-    async verifyEmail(data) {
-        // get model based on type
-        const model = getModel(data.type);
-
-        // find user by email and activation code
-        const user = await model.findOne({
-            email: data.email,
-            status: "active",
-        });
-        if (!user) {
-            return {
-                error: i18n.__("userNotFound"),
-                data: null,
-            };
-        }
-
-        // check if user is already verified
-        if (user.isVerified) {
-            return {
-                error: i18n.__("alreadyVerified"),
-                data: null,
-            };
-        }
-
-        // validate the otp
-        const validOtp = otps.isOtpValid(user, data.otp);
-        if (!validOtp) {
-            return {
-                error: i18n.__("invalidOtp"),
-                data: null,
-            };
-        }
-
-        // activate user
-        otps.resetOtp(user); // reset otp
-        user.isVerified = true;
-        await user.save();
-
-        await model.updateOne({ _id: user._id }, { $unset: { expireAt: "" } });
-
-        return {
-            error: null,
-            data: {},
-        };
-    }
-
-    async verifyPhone(data) {
-        // get model based on type
-        const model = getModel(data.type);
-
-        // find user by phone and activation code
-        const user = await model.findOne({
-            phone: data.phone,
-            status: "active",
-        });
-        if (!user) {
-            return {
-                error: i18n.__("userNotFound"),
-                data: null,
-            };
-        }
-
-        // check if user is already verified
-        if (user.isVerified) {
-            return {
-                error: i18n.__("alreadyVerified"),
-                data: null,
-            };
-        }
-
-        // validate the otp
-        const validOtp = otps.isOtpValid(user, data.otp);
-        if (!validOtp) {
-            return {
-                error: i18n.__("invalidOtp"),
-                data: null,
-            };
-        }
-
-        // Activate user
-        otps.resetOtp(user); // reset otp
-        user.isVerified = true;
-        await user.save();
-
-        await model.updateOne({ _id: user._id }, { $unset: { expireAt: "" } });
-
-        return {
-            error: null,
-            data: {},
-        };
-    }
-
     async completeData(data, sub, req) {
         // get model based on type
         const model = getModel(sub.userType);
@@ -462,46 +359,14 @@ export class AuthService {
         // get model based on type
         const model = getModel(data.type);
 
-        // detect (email / phone)
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const phoneRegex = /^\+?[0-9]{7,15}$/;
+        // find user by identifier
+        const user = await getUserWithIdentifier(model, data.identifier, {
+            canReset: true,
+        });
 
-        let user = null;
-
-        if (emailRegex.test(data.identifier)) {
-            // handle email
-            user = await model.findOne({
-                email: data.identifier,
-                status: "active",
-                isVerified: true,
-                dataCompleted: true,
-                canReset: true,
-            });
-            if (!user) {
-                return {
-                    error: i18n.__("userNotFound"),
-                    data: null,
-                };
-            }
-        } else if (phoneRegex.test(data.identifier)) {
-            // handle phone
-            user = await model.findOne({
-                phone: data.identifier,
-                status: "active",
-                isVerified: true,
-                dataCompleted: true,
-                canReset: true,
-            });
-            if (!user) {
-                return {
-                    error: i18n.__("userNotFound"),
-                    data: null,
-                };
-            }
-        } else {
-            // invalid input
+        if (!user) {
             return {
-                error: i18n.__("invalidIdentifier"),
+                error: i18n.__("userNotFound"),
                 data: null,
             };
         }
@@ -516,71 +381,6 @@ export class AuthService {
 
         // delete user devices
         await devices.deleteAllUserDevices(user.id);
-
-        return {
-            error: null,
-            data: {},
-        };
-    }
-
-    async verifyResetOtp(data) {
-        // get model based on type
-        const model = getModel(data.type);
-
-        // detect (email / phone)
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const phoneRegex = /^\+?[0-9]{7,15}$/;
-
-        let user = null;
-
-        if (emailRegex.test(data.identifier)) {
-            // handle email
-            user = await model.findOne({
-                email: data.identifier,
-                status: "active",
-                isVerified: true,
-                dataCompleted: true,
-            });
-            if (!user) {
-                return {
-                    error: i18n.__("userNotFound"),
-                    data: null,
-                };
-            }
-        } else if (phoneRegex.test(data.identifier)) {
-            // handle phone
-            user = await model.findOne({
-                phone: data.identifier,
-                status: "active",
-                isVerified: true,
-                dataCompleted: true,
-            });
-            if (!user) {
-                return {
-                    error: i18n.__("userNotFound"),
-                    data: null,
-                };
-            }
-        } else {
-            // invalid input
-            return {
-                error: i18n.__("invalidIdentifier"),
-                data: null,
-            };
-        }
-
-        // validate the otp
-        const validOtp = otps.isOtpValid(user, data.otp);
-        if (!validOtp) {
-            return {
-                error: i18n.__("invalidOtp"),
-                data: null,
-            };
-        }
-
-        otps.resetOtp(user); // reset otp
-        user.canReset = true;
-        await user.save();
 
         return {
             error: null,

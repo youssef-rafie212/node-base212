@@ -5,6 +5,14 @@ import { apiError, apiResponse } from "../../utils/index.js";
 export class UserController {
     constructor(userService) {
         this.userService = userService;
+
+        // bind all methods
+        this.createUser = this.createUser.bind(this);
+        this.getAllUsers = this.getAllUsers.bind(this);
+        this.getUser = this.getUser.bind(this);
+        this.updateUser = this.updateUser.bind(this);
+        this.deleteUser = this.deleteUser.bind(this);
+        this.toggleBlockUser = this.toggleBlockUser.bind(this);
     }
 
     async createUser(req, res) {

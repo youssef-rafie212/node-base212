@@ -23,7 +23,7 @@ router.patch(
     doubleCsrfProtection,
     authenticateAdmin,
     authorize,
-    settingsValidation.validateUpdateSettings,
+    settingsValidation.validateUpdateSettings(),
     validateRequest,
     settingsController.updateSettings
 );

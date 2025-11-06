@@ -21,7 +21,7 @@ router.post(
     doubleCsrfProtection,
     authenticateAdmin,
     authorize,
-    roleValidation.validateCreateRole,
+    roleValidation.validateCreateRole(),
     validateRequest,
     roleController.createRole
 );
@@ -32,7 +32,7 @@ router.get(
     "/get-role",
     authenticateAdmin,
     authorize,
-    roleValidation.validateGetRole,
+    roleValidation.validateGetRole(),
     validateRequest,
     roleController.getRole
 );
@@ -42,7 +42,7 @@ router.patch(
     doubleCsrfProtection,
     authenticateAdmin,
     authorize,
-    roleValidation.validateUpdateRoleName,
+    roleValidation.validateUpdateRoleName(),
     validateRequest,
     roleController.updateRoleName
 );
@@ -52,7 +52,7 @@ router.delete(
     doubleCsrfProtection,
     authenticateAdmin,
     authorize,
-    roleValidation.validateDeleteRole,
+    roleValidation.validateDeleteRole(),
     validateRequest,
     roleController.deleteRole
 );
@@ -69,7 +69,7 @@ router.post(
     doubleCsrfProtection,
     authenticateAdmin,
     authorize,
-    roleValidation.validateAddPermissionsToRole,
+    roleValidation.validateAddPermissionsToRole(),
     validateRequest,
     roleController.addPermissionsToRole
 );
@@ -79,7 +79,7 @@ router.delete(
     doubleCsrfProtection,
     authenticateAdmin,
     authorize,
-    roleValidation.validateRemovePermissionsFromRole,
+    roleValidation.validateRemovePermissionsFromRole(),
     validateRequest,
     roleController.removePermissionsFromRole
 );

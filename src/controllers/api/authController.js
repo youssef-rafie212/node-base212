@@ -5,6 +5,16 @@ import { apiError, apiResponse } from "../../utils/index.js";
 export class AuthController {
     constructor(authService) {
         this.authService = authService;
+
+        // bind all methods
+        this.signup = this.signup.bind(this);
+        this.requestOtp = this.requestOtp.bind(this);
+        this.localSignIn = this.localSignIn.bind(this);
+        this.socialSignIn = this.socialSignIn.bind(this);
+        this.verifyOtp = this.verifyOtp.bind(this);
+        this.completeData = this.completeData.bind(this);
+        this.signOut = this.signOut.bind(this);
+        this.resetPassword = this.resetPassword.bind(this);
     }
 
     async signup(req, res) {
@@ -81,34 +91,17 @@ export class AuthController {
         }
     }
 
-    async verifyEmail(req, res) {
+    async verifyOtp(req, res) {
         try {
             const data = req.validatedData;
 
-            const response = await this.authService.verifyEmail(data);
+            const response = await this.authService.verifyOtp(data);
 
             if (response.error) {
                 return res.status(400).send(apiError(400, response.error));
             }
 
-            res.send(apiResponse(200, i18n.__("userVerified"), response.data));
-        } catch (error) {
-            console.log(error);
-            res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
-        }
-    }
-
-    async verifyPhone(req, res) {
-        try {
-            const data = req.validatedData;
-
-            const response = await this.authService.verifyPhone(data);
-
-            if (response.error) {
-                return res.status(400).send(apiError(400, response.error));
-            }
-
-            res.send(apiResponse(200, i18n.__("userVerified"), response.data));
+            res.send(apiResponse(200, i18n.__("otpVerified"), response.data));
         } catch (error) {
             console.log(error);
             res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
@@ -172,23 +165,6 @@ export class AuthController {
                     response.data
                 )
             );
-        } catch (error) {
-            console.log(error);
-            res.status(500).send(apiError(500, i18n.__("returnDeveloper")));
-        }
-    }
-
-    async verifyResetOtp(req, res) {
-        try {
-            const data = req.validatedData;
-
-            const response = await this.authService.verifyResetOtp(data);
-
-            if (response.error) {
-                return res.status(400).send(apiError(400, response.error));
-            }
-
-            res.send(apiResponse(200, i18n.__("otpVerified"), response.data));
         } catch (error) {
             console.log(error);
             res.status(500).send(apiError(500, i18n.__("returnDeveloper")));

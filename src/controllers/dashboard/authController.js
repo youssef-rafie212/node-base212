@@ -5,6 +5,10 @@ import { apiError, apiResponse } from "../../utils/index.js";
 export class AuthController {
     constructor(authService) {
         this.authService = authService;
+
+        // bind all methods
+        this.getCsrf = this.getCsrf.bind(this);
+        this.adminSignIn = this.adminSignIn.bind(this);
     }
 
     getCsrf(req, res) {

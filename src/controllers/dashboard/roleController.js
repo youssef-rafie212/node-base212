@@ -5,6 +5,17 @@ import { apiError, apiResponse } from "../../utils/index.js";
 export class RoleController {
     constructor(roleService) {
         this.roleService = roleService;
+
+        // bind all methods
+        this.createRole = this.createRole.bind(this);
+        this.getAllRoles = this.getAllRoles.bind(this);
+        this.getRole = this.getRole.bind(this);
+        this.deleteRole = this.deleteRole.bind(this);
+        this.updateRoleName = this.updateRoleName.bind(this);
+        this.addPermissionsToRole = this.addPermissionsToRole.bind(this);
+        this.getAllPermissions = this.getAllPermissions.bind(this);
+        this.removePermissionsFromRole =
+            this.removePermissionsFromRole.bind(this);
     }
 
     async createRole(req, res) {

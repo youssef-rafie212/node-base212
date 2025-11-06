@@ -33,10 +33,7 @@ export const sendVerificationBySMS = async (phoneNumber, messageKey) => {
     const otp = generateCode.generateOtp();
 
     // send the SMS
-    const smsResponse = await sendSMS(
-        phoneNumber,
-        i18n.__(messageKey, { otp })
-    );
+    await sendSMS(phoneNumber, i18n.__(messageKey, { otp }));
 
-    return { otp, smsResponse };
+    return otp;
 };

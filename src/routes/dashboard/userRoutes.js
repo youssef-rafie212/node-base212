@@ -21,7 +21,7 @@ router.post(
     doubleCsrfProtection,
     authenticateAdmin,
     authorize,
-    userValidation.validateCreateUser,
+    userValidation.validateCreateUser(),
     validateRequest,
     userController.createUser
 );
@@ -30,7 +30,7 @@ router.get(
     "/get-all-users",
     authenticateAdmin,
     authorize,
-    userValidation.validateGetAllUsers,
+    userValidation.validateGetAllUsers(),
     validateRequest,
     userController.getAllUsers
 );
@@ -39,7 +39,7 @@ router.get(
     "/get-user",
     authenticateAdmin,
     authorize,
-    userValidation.validateGetUserById,
+    userValidation.validateGetUserById(),
     validateRequest,
     userController.getUser
 );
@@ -49,7 +49,7 @@ router.patch(
     doubleCsrfProtection,
     authenticateAdmin,
     authorize,
-    userValidation.validateUpdateUser,
+    userValidation.validateUpdateUser(),
     validateRequest,
     userController.updateUser
 );
@@ -59,7 +59,7 @@ router.delete(
     doubleCsrfProtection,
     authenticateAdmin,
     authorize,
-    userValidation.validateDeleteUserById,
+    userValidation.validateDeleteUserById(),
     validateRequest,
     userController.deleteUser
 );
@@ -69,7 +69,7 @@ router.patch(
     doubleCsrfProtection,
     authenticateAdmin,
     authorize,
-    userValidation.validateToggleBlockUserById,
+    userValidation.validateToggleBlockUserById(),
     validateRequest,
     userController.toggleBlockUser
 );

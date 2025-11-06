@@ -5,6 +5,9 @@ import { apiError, apiResponse } from "../../utils/index.js";
 export class ChatRoomController {
     constructor(chatRoomService) {
         this.chatRoomService = chatRoomService;
+
+        // bind all methods
+        this.getChatRooms = this.getChatRooms.bind(this);
     }
 
     async getChatRooms(req, res) {

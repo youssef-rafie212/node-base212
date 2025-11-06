@@ -101,5 +101,7 @@
     "otpVerified": "OTP verified successfully.",
     "invalidIdentifier": "Invalid identifier.",
     "invalidOldPassword": "Invalid old password.",
-    "passwordUpdated": "Password updated successfully."
+    "passwordUpdated": "Password updated successfully.",
+    "reasonRequired": "Reason is required.",
+    "invalidReason": "Invalid reason."
 }

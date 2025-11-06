@@ -5,6 +5,14 @@ import { apiError, apiResponse } from "../../utils/index.js";
 export class AdminController {
     constructor(adminService) {
         this.adminService = adminService;
+
+        // bind all methods
+        this.createAdmin = this.createAdmin.bind(this);
+        this.getAllAdmins = this.getAllAdmins.bind(this);
+        this.getAdmin = this.getAdmin.bind(this);
+        this.updateAdmin = this.updateAdmin.bind(this);
+        this.deleteAdmin = this.deleteAdmin.bind(this);
+        this.toggleBlockAdmin = this.toggleBlockAdmin.bind(this);
     }
 
     async createAdmin(req, res) {

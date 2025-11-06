@@ -5,6 +5,12 @@ import { apiError, apiResponse } from "../../utils/index.js";
 export class UserController {
     constructor(userService) {
         this.userService = userService;
+
+        // bind all methods
+        this.me = this.me.bind(this);
+        this.updatePassword = this.updatePassword.bind(this);
+        this.updateMe = this.updateMe.bind(this);
+        this.deleteMe = this.deleteMe.bind(this);
     }
 
     async me(req, res) {

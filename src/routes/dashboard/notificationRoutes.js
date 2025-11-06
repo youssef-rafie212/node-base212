@@ -21,7 +21,7 @@ router.post(
     doubleCsrfProtection,
     authenticateAdmin,
     authorize,
-    notificationValidation.validateSendSingleNotification,
+    notificationValidation.validateSendSingleNotification(),
     validateRequest,
     notificationController.sendSingleNotification
 );
@@ -31,7 +31,7 @@ router.post(
     doubleCsrfProtection,
     authenticateAdmin,
     authorize,
-    notificationValidation.validateSendAllNotification,
+    notificationValidation.validateSendAllNotification(),
     validateRequest,
     notificationController.sendAllNotification
 );

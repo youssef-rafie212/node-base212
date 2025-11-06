@@ -5,6 +5,10 @@ import { apiResponse, apiError } from "../../utils/index.js";
 export class NotificationController {
     constructor(notificationService) {
         this.notificationService = notificationService;
+
+        // bind all methods
+        this.sendSingleNotification = this.sendSingleNotification.bind(this);
+        this.sendAllNotification = this.sendAllNotification.bind(this);
     }
 
     async sendSingleNotification(req, res) {
