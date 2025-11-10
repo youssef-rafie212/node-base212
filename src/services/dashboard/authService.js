@@ -42,7 +42,10 @@ export class AuthService {
         }
 
         // generate token
-        const token = generateJwt(admin._id, "admin");
+        const token = generateJwt({
+            id: admin._id,
+            userType: "admin",
+        });
 
         // generate response object
         const resObject = returnObject.adminWithTokenObj(

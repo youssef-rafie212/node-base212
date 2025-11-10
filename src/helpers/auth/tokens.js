@@ -3,15 +3,15 @@ import { UserToken } from "../../models/index.js";
 import getRef from "../refMap/refMap.js";
 
 // generate and store new jwt token
-export const newToken = async (userId, userType) => {
+export const newToken = async (payload) => {
     // generate jwt token
-    const token = generateJwt(userId, userType);
+    const token = generateJwt(payload);
 
     // store the token (if the type is not admin)
-    if (userType !== "admin") {
+    if (payload.userType !== "admin") {
         await UserToken.create({
-            user: userId,
-            userRef: getRef(userType),
+            user: payload.id,
+            userRef: getRef(payload.userType),
             token,
         });
     }

@@ -2,14 +2,8 @@ import jwt from "jsonwebtoken";
 import { JwtConfig } from "../../../config/index.js";
 
 // generate a jwt
-const generateJwt = (id, userType = "user") => {
-    const token = jwt.sign(
-        {
-            id,
-            userType: userType,
-        },
-        JwtConfig.secret
-    );
+const generateJwt = (payload) => {
+    const token = jwt.sign(payload, JwtConfig.secret);
 
     return token;
 };

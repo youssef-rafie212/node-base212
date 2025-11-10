@@ -67,8 +67,7 @@ export class AuthService {
 
         // generate user token and store user device
         const token = await afterAuth(
-            id,
-            data.type,
+            { id, userType: data.type },
             data.fcmToken,
             data.deviceType
         );
@@ -202,7 +201,10 @@ export class AuthService {
 
         // create a retry token in case of not completed data or unverified account,
         // so the user can continue to complete data or verify account
-        const retryToken = await tokens.newToken(user.id, data.type);
+        const retryToken = await tokens.newToken({
+            id: user.id,
+            type: data.type,
+        });
 
         // check if user is blocked
         if (user.status === "blocked") {
@@ -234,8 +236,10 @@ export class AuthService {
 
         // generate token
         const token = await afterAuth(
-            user._id,
-            "user",
+            {
+                id: user.id,
+                userType: data.type,
+            },
             data.fcmToken,
             data.deviceType
         );
@@ -280,8 +284,10 @@ export class AuthService {
 
         // generate own JWT
         const token = await afterAuth(
-            user._id,
-            user.type,
+            {
+                id: user.id,
+                userType: user.type,
+            },
             data.fcmToken,
             data.deviceType
         );
