@@ -1,5 +1,7 @@
 import i18n from "i18n";
 import { body, check } from "express-validator";
+import { duplicate, validateCountryExists } from "../../helpers/index.js";
+import { User } from "../../models/index.js";
 
 export class DashboardUserValidation {
     validateCreateUser() {
@@ -23,14 +25,34 @@ export class DashboardUserValidation {
                 .notEmpty()
                 .withMessage(() => i18n.__("emailRequired"))
                 .isEmail()
-                .withMessage(() => i18n.__("invalidEmail")),
+                .withMessage(() => i18n.__("invalidEmail"))
+                .custom(async (value, { req }) => {
+                    // check for duplicate email
+                    const isDuplicate = await duplicate([User], "email", value);
+                    if (isDuplicate) {
+                        throw i18n.__("emailExists");
+                    }
+                    return true;
+                }),
 
             body("phone")
                 .trim()
                 .notEmpty()
                 .withMessage(() => i18n.__("phoneRequired"))
                 .isMobilePhone("any")
-                .withMessage(() => i18n.__("invalidPhone")),
+                .withMessage(() => i18n.__("invalidPhone"))
+                .custom(async (value, { req }) => {
+                    if (!value.startsWith("+")) {
+                        throw i18n.__("invalidPhone");
+                    }
+
+                    // check for duplicate phone
+                    const isDuplicate = await duplicate([User], "phone", value);
+                    if (isDuplicate) {
+                        throw i18n.__("phoneExists");
+                    }
+                    return true;
+                }),
 
             body("password")
                 .trim()
@@ -44,7 +66,14 @@ export class DashboardUserValidation {
                 .notEmpty()
                 .withMessage(() => i18n.__("countryRequired"))
                 .isMongoId()
-                .withMessage(() => i18n.__("invalidCountry")),
+                .withMessage(() => i18n.__("invalidCountry"))
+                .custom(async (value) => {
+                    const countryExists = await validateCountryExists(value);
+                    if (!countryExists) {
+                        throw i18n.__("invalidCountry");
+                    }
+                    return true;
+                }),
 
             body("gender")
                 .optional()
@@ -115,7 +144,20 @@ export class DashboardUserValidation {
                 .notEmpty()
                 .withMessage(() => i18n.__("emailRequired"))
                 .isEmail()
-                .withMessage(() => i18n.__("invalidEmail")),
+                .withMessage(() => i18n.__("invalidEmail"))
+                .custom(async (value, { req }) => {
+                    // check for duplicate email
+                    const isDuplicate = await duplicate(
+                        [User],
+                        "email",
+                        value,
+                        req.body.id
+                    );
+                    if (isDuplicate) {
+                        throw i18n.__("emailExists");
+                    }
+                    return true;
+                }),
 
             body("phone")
                 .optional()
@@ -123,7 +165,24 @@ export class DashboardUserValidation {
                 .notEmpty()
                 .withMessage(() => i18n.__("phoneRequired"))
                 .isMobilePhone("any")
-                .withMessage(() => i18n.__("invalidPhone")),
+                .withMessage(() => i18n.__("invalidPhone"))
+                .custom(async (value, { req }) => {
+                    if (!value.startsWith("+")) {
+                        throw i18n.__("invalidPhone");
+                    }
+
+                    // check for duplicate phone
+                    const isDuplicate = await duplicate(
+                        [User],
+                        "phone",
+                        value,
+                        req.body.id
+                    );
+                    if (isDuplicate) {
+                        throw i18n.__("phoneExists");
+                    }
+                    return true;
+                }),
 
             body("password")
                 .optional()
@@ -138,7 +197,14 @@ export class DashboardUserValidation {
                 .notEmpty()
                 .withMessage(() => i18n.__("countryRequired"))
                 .isMongoId()
-                .withMessage(() => i18n.__("invalidCountry")),
+                .withMessage(() => i18n.__("invalidCountry"))
+                .custom(async (value) => {
+                    const countryExists = await validateCountryExists(value);
+                    if (!countryExists) {
+                        throw i18n.__("invalidCountry");
+                    }
+                    return true;
+                }),
 
             body("gender")
                 .optional()

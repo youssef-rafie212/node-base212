@@ -74,7 +74,7 @@ export const allPermissions = [
             {
                 titleEn: "create user",
                 titleAr: "اضافة مستخدم",
-                route: "/create-new-user",
+                route: "/create-user",
             },
             {
                 titleEn: "get all users",
@@ -112,7 +112,7 @@ export const allPermissions = [
             {
                 titleEn: "create admin",
                 titleAr: "اضافة مشرف",
-                route: "/create-new-admin",
+                route: "/create-admin",
             },
             {
                 titleEn: "get all admins",

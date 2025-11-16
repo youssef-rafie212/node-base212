@@ -1,54 +1,12 @@
 import i18n from "i18n";
 
 import { returnObject } from "../../utils/index.js";
-import {
-    duplicate,
-    userAvatars,
-    getModel,
-    validateCountryExists,
-} from "../../helpers/index.js";
+import { userAvatars, getModel } from "../../helpers/index.js";
 
 export class UserService {
     async createUser(data, req) {
         // get model based on type
         const model = getModel(data.type);
-
-        // check for duplicate email if it exists in body
-        if (data.email) {
-            const isDuplicate = await duplicate(model, "email", data.email);
-            if (isDuplicate) {
-                return {
-                    error: i18n.__("emailExists"),
-                    data: null,
-                };
-            }
-        }
-
-        // check for duplicate phone if it exists in body
-        if (data.phone) {
-            const isPhoneDuplicate = await duplicate(
-                model,
-                "phone",
-                data.phone
-            );
-            if (isPhoneDuplicate) {
-                return {
-                    error: i18n.__("phoneExists"),
-                    data: null,
-                };
-            }
-        }
-
-        // validate country if it exists in body
-        if (data.country) {
-            const isCountryValid = await validateCountryExists(data.country);
-            if (!isCountryValid) {
-                return {
-                    error: i18n.__("invalidCountry"),
-                    data: null,
-                };
-            }
-        }
 
         // handle avatar upload if it exists in the request
         const id = await userAvatars.uploadAvatar(req, "users", data);
@@ -144,49 +102,6 @@ export class UserService {
                 error: i18n.__("documentNotFound"),
                 data: null,
             };
-        }
-
-        // check for duplicate email if it exists in body
-        if (data.email) {
-            const isDuplicate = await duplicate(
-                model,
-                "email",
-                data.email,
-                data.id
-            );
-            if (isDuplicate) {
-                return {
-                    error: i18n.__("emailExists"),
-                    data: null,
-                };
-            }
-        }
-
-        // check for duplicate phone if it exists in body
-        if (data.phone) {
-            const isPhoneDuplicate = await duplicate(
-                model,
-                "phone",
-                data.phone,
-                data.id
-            );
-            if (isPhoneDuplicate) {
-                return {
-                    error: i18n.__("phoneExists"),
-                    data: null,
-                };
-            }
-        }
-
-        // validate country if it exists in body
-        if (data.country) {
-            const isCountryValid = await validateCountryExists(data.country);
-            if (!isCountryValid) {
-                return {
-                    error: i18n.__("invalidCountry"),
-                    data: null,
-                };
-            }
         }
 
         // handle avatar upload if it exists in the request

@@ -17,7 +17,7 @@ const userService = new UserService();
 const userController = new UserController(userService);
 
 router.post(
-    "/create-new-user",
+    "/create-user",
     doubleCsrfProtection,
     authenticateAdmin,
     authorize,

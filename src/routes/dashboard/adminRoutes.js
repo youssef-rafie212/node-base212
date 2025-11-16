@@ -17,7 +17,7 @@ const adminService = new AdminService();
 const adminController = new AdminController(adminService);
 
 router.post(
-    "/create-new-admin",
+    "/create-admin",
     doubleCsrfProtection,
     authenticateAdmin,
     authorize,
