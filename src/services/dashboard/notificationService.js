@@ -66,5 +66,10 @@ export class NotificationService {
                 );
             })
         );
+
+        return {
+            error: null,
+            data: {},
+        };
     }
 }
