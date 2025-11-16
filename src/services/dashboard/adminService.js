@@ -1,7 +1,7 @@
 import i18n from "i18n";
 
 import { returnObject } from "../../utils/index.js";
-import { duplicate, userAvatars, validateRole } from "../../helpers/index.js";
+import { userAvatars } from "../../helpers/index.js";
 import { Admin } from "../../models/index.js";
 
 export class AdminService {

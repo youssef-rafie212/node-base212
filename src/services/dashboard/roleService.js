@@ -2,7 +2,6 @@ import i18n from "i18n";
 
 import { returnObject, sharedVariable } from "../../utils/index.js";
 import { Role, Admin } from "../../models/index.js";
-import { duplicateArEnName } from "../../helpers/index.js";
 
 export class RoleService {
     async createRole(data) {
