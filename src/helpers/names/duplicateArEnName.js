@@ -11,5 +11,5 @@ export const duplicateArEnName = async (model, name, updateId) => {
               $or: [{ "name.ar": name.ar }, { "name.en": name.en }],
           });
 
-    return duplicate;
+    return duplicate ? true : false;
 };

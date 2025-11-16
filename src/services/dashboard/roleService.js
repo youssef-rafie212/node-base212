@@ -6,15 +6,6 @@ import { duplicateArEnName } from "../../helpers/index.js";
 
 export class RoleService {
     async createRole(data) {
-        // check for duplicate role name (both en and ar)
-        const nameExists = await duplicateArEnName(Role, data.name);
-        if (nameExists) {
-            return {
-                error: i18n.__("nameExists"),
-                data: null,
-            };
-        }
-
         // create new role
         const role = await Role.create(data);
 
@@ -77,6 +68,7 @@ export class RoleService {
     async updateRoleName(data) {
         // find role by id
         const role = await Role.findOne({ _id: data.id, status: "active" });
+
         if (!role) {
             return {
                 error: i18n.__("documentNotFound"),
@@ -88,15 +80,6 @@ export class RoleService {
         if (role.isSuperAdminRole) {
             return {
                 error: i18n.__("cantModifyAdminRole"),
-                data: null,
-            };
-        }
-
-        // check for duplicate role name (both en and ar)
-        const nameExists = await duplicateArEnName(Role, data.name, data.id);
-        if (nameExists) {
-            return {
-                error: i18n.__("nameExists"),
                 data: null,
             };
         }

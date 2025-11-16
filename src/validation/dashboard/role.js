@@ -1,5 +1,7 @@
 import i18n from "i18n";
-import { body } from "express-validator";
+import { body, check } from "express-validator";
+import { duplicateArEnName } from "../../helpers/index.js";
+import { Role } from "../../models/index.js";
 
 export class RoleValidation {
     validateCreateRole() {
@@ -13,6 +15,14 @@ export class RoleValidation {
                 .trim()
                 .notEmpty()
                 .withMessage(() => i18n.__("nameRequired")),
+
+            check("name").custom(async (value, { req }) => {
+                const duplicate = await duplicateArEnName(Role, value);
+                if (duplicate) {
+                    throw i18n.__("nameExists");
+                }
+                return true;
+            }),
         ];
     }
 
@@ -45,6 +55,18 @@ export class RoleValidation {
                 .trim()
                 .notEmpty()
                 .withMessage(() => i18n.__("nameRequired")),
+
+            check("name").custom(async (value, { req }) => {
+                const duplicate = await duplicateArEnName(
+                    Role,
+                    value,
+                    req.body.id
+                );
+                if (duplicate) {
+                    throw i18n.__("nameExists");
+                }
+                return true;
+            }),
         ];
     }
 
