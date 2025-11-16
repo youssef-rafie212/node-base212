@@ -12,9 +12,9 @@ const duplicate = async (models, fieldName, fieldValue, updateId) => {
         if (updateId) query._id = { $ne: updateId };
 
         const found = await model.findOne(query).lean().select("_id");
-        if (found) return found; // stop at first match
+        if (found) return true;
     }
-    return null;
+    return false;
 };
 
 export default duplicate;

@@ -6,42 +6,6 @@ import { Admin } from "../../models/index.js";
 
 export class AdminService {
     async createAdmin(data, req) {
-        // check if role exists and not the super admin
-        const validRole = await validateRole(data.role, false);
-
-        if (!validRole) {
-            return {
-                error: i18n.__("invalidRole"),
-                data: null,
-            };
-        }
-
-        // check for duplicate email if it exists in body
-        if (data.email) {
-            const isDuplicate = await duplicate(Admin, "email", data.email);
-            if (isDuplicate) {
-                return {
-                    error: i18n.__("emailExists"),
-                    data: null,
-                };
-            }
-        }
-
-        // check for duplicate phone if it exists in body
-        if (data.phone) {
-            const isPhoneDuplicate = await duplicate(
-                Admin,
-                "phone",
-                data.phone
-            );
-            if (isPhoneDuplicate) {
-                return {
-                    error: i18n.__("phoneExists"),
-                    data: null,
-                };
-            }
-        }
-
         // handle avatar upload if it exists in the request
         const id = await userAvatars.uploadAvatar(req, "supervisors", data);
 
@@ -127,48 +91,15 @@ export class AdminService {
             };
         }
 
-        // check if role exists and not the super admin
-        if (data.role) {
-            const validRole = await validateRole(data.role, false);
-
-            if (!validRole) {
-                return {
-                    error: i18n.__("invalidRole"),
-                    data: null,
-                };
-            }
-        }
-
-        // check for duplicate email if it exists in body
-        if (data.email) {
-            const isDuplicate = await duplicate(
-                Admin,
-                "email",
-                data.email,
-                data.id
-            );
-            if (isDuplicate) {
-                return {
-                    error: i18n.__("emailExists"),
-                    data: null,
-                };
-            }
-        }
-
-        // check for duplicate phone if it exists in body
-        if (data.phone) {
-            const isPhoneDuplicate = await duplicate(
-                Admin,
-                "phone",
-                data.phone,
-                data.id
-            );
-            if (isPhoneDuplicate) {
-                return {
-                    error: i18n.__("phoneExists"),
-                    data: null,
-                };
-            }
+        // if the admin being updated is a super admin, only allow self updates without role change
+        if (
+            (admin.isSuperAdmin && data.role) ||
+            (admin.isSuperAdmin && req.admin.id !== admin.id)
+        ) {
+            return {
+                error: i18n.__("cantModifyAdminRole"),
+                data: null,
+            };
         }
 
         // handle avatar upload if it exists in the request
@@ -194,7 +125,7 @@ export class AdminService {
         };
     }
 
-    async deleteAdmin(data) {
+    async deleteAdmin(data, req) {
         // find admin by id and soft delete it
         const admin = await Admin.findOne({
             _id: data.id,
@@ -204,6 +135,20 @@ export class AdminService {
         if (!admin) {
             return {
                 error: i18n.__("documentNotFound"),
+                data: null,
+            };
+        }
+
+        if (admin.id === req.admin.id) {
+            return {
+                error: i18n.__("cantDeleteSelf"),
+                data: null,
+            };
+        }
+
+        if (admin.isSuperAdmin) {
+            return {
+                error: i18n.__("cantModifyAdminRole"),
                 data: null,
             };
         }
@@ -218,7 +163,7 @@ export class AdminService {
         };
     }
 
-    async toggleBlockAdmin(data) {
+    async toggleBlockAdmin(data, req) {
         // find admin by id
         const admin = await Admin.findOne({
             _id: data.id,
@@ -228,6 +173,20 @@ export class AdminService {
         if (!admin) {
             return {
                 error: i18n.__("documentNotFound"),
+                data: null,
+            };
+        }
+
+        if (admin.id === req.admin.id) {
+            return {
+                error: i18n.__("cantBlockSelf"),
+                data: null,
+            };
+        }
+
+        if (admin.isSuperAdmin) {
+            return {
+                error: i18n.__("cantModifyAdminRole"),
                 data: null,
             };
         }

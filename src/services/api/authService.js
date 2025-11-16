@@ -4,13 +4,11 @@ import admin from "firebase-admin";
 import { returnObject } from "../../utils/index.js";
 import {
     getModel,
-    duplicate,
     devices,
     tokens,
     userAvatars,
     otps,
     afterAuth,
-    validateCountryExists,
     getUserWithIdentifier,
 } from "../../helpers/index.js";
 import { sendOtpWithIdentifier } from "../../helpers/auth/sendOtpWithIdentifier.js";
@@ -19,43 +17,6 @@ export class AuthService {
     async signup(data, req) {
         // get model based on type
         const model = getModel(data.type);
-
-        // check for duplicate email if it exists in body
-        if (data.email) {
-            const isDuplicate = await duplicate(model, "email", data.email);
-            if (isDuplicate) {
-                return {
-                    error: i18n.__("emailExists"),
-                    data: null,
-                };
-            }
-        }
-
-        // check for duplicate phone if it exists in body
-        if (data.phone) {
-            const isPhoneDuplicate = await duplicate(
-                model,
-                "phone",
-                data.phone
-            );
-            if (isPhoneDuplicate) {
-                return {
-                    error: i18n.__("phoneExists"),
-                    data: null,
-                };
-            }
-        }
-
-        // validate country if it exists in body
-        if (data.country) {
-            const isCountryValid = await validateCountryExists(data.country);
-            if (!isCountryValid) {
-                return {
-                    error: i18n.__("invalidCountry"),
-                    data: null,
-                };
-            }
-        }
 
         // handle avatar upload if it exists in the request
         const id = await userAvatars.uploadAvatar(req, "users", data);
@@ -102,13 +63,6 @@ export class AuthService {
 
         const otp = await sendOtpWithIdentifier(data.identifier);
 
-        if (!otp) {
-            return {
-                error: i18n.__("invalidIdentifier"),
-                data: null,
-            };
-        }
-
         otps.setOtp(user, otp);
 
         await user.save();
@@ -124,6 +78,13 @@ export class AuthService {
         const model = getModel(data.type);
 
         const user = await getUserWithIdentifier(model, data.identifier);
+
+        if (!user) {
+            return {
+                error: i18n.__("userNotFound"),
+                data: null,
+            };
+        }
 
         // validate the otp
         const validOtp = otps.isOtpValid(user, data.otp);
@@ -161,27 +122,11 @@ export class AuthService {
         const model = getModel(data.type);
 
         // find user by email or phone
-        let user = null;
-
-        if (data.email) {
-            user = await model.findOne({
-                email: data.email,
-                status: "active",
-            });
-        } else if (data.phone) {
-            user = await model.findOne({
-                phone: data.phone,
-                status: "active",
-            });
-        }
+        const user = await getUserWithIdentifier(model, data.identifier);
 
         if (!user) {
             return {
-                error: i18n.__(
-                    data.email
-                        ? "invalidCredentialsEmail"
-                        : "invalidCredentialsPhone"
-                ),
+                error: i18n.__("invalidCredentials"),
                 data: null,
             };
         }
@@ -190,11 +135,7 @@ export class AuthService {
         const isMatch = await user.comparePassword(data.password);
         if (!isMatch) {
             return {
-                error: i18n.__(
-                    data.email
-                        ? "invalidCredentialsEmail"
-                        : "invalidCredentialsPhone"
-                ),
+                error: i18n.__("invalidCredentials"),
                 data: null,
             };
         }
@@ -203,16 +144,8 @@ export class AuthService {
         // so the user can continue to complete data or verify account
         const retryToken = await tokens.newToken({
             id: user.id,
-            type: data.type,
+            userType: data.type,
         });
-
-        // check if user is blocked
-        if (user.status === "blocked") {
-            return {
-                error: i18n.__("accountBlocked"),
-                data: null,
-            };
-        }
 
         // check if user is not verified
         if (!user.isVerified) {

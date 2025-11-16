@@ -1,5 +1,8 @@
 import i18n from "i18n";
 import { body, param, check } from "express-validator";
+import { duplicate, validateCountryExists } from "../../helpers/index.js";
+import { User } from "../../models/index.js";
+import { getTypeWithIdentifier } from "../../helpers/auth/getTypeWithIdentifier.js";
 
 export class AuthValidation {
     validateGenerateToken() {
@@ -28,7 +31,15 @@ export class AuthValidation {
                 .notEmpty()
                 .withMessage(() => i18n.__("emailRequired"))
                 .isEmail()
-                .withMessage(() => i18n.__("invalidEmail")),
+                .withMessage(() => i18n.__("invalidEmail"))
+                .custom(async (value, { req }) => {
+                    // check for duplicate email
+                    const isDuplicate = await duplicate([User], "email", value);
+                    if (isDuplicate) {
+                        throw i18n.__("emailExists");
+                    }
+                    return true;
+                }),
 
             body("phone")
                 .optional()
@@ -37,9 +48,15 @@ export class AuthValidation {
                 .withMessage(() => i18n.__("phoneRequired"))
                 .isMobilePhone("any")
                 .withMessage(() => i18n.__("invalidPhone"))
-                .custom((value, { req }) => {
+                .custom(async (value, { req }) => {
                     if (!value.startsWith("+")) {
                         throw i18n.__("invalidPhone");
+                    }
+
+                    // check for duplicate phone
+                    const isDuplicate = await duplicate([User], "phone", value);
+                    if (isDuplicate) {
+                        throw i18n.__("phoneExists");
                     }
                     return true;
                 }),
@@ -102,7 +119,14 @@ export class AuthValidation {
                 .notEmpty()
                 .withMessage(() => i18n.__("countryRequired"))
                 .isMongoId()
-                .withMessage(() => i18n.__("invalidCountry")),
+                .withMessage(() => i18n.__("invalidCountry"))
+                .custom(async (value) => {
+                    const countryExists = await validateCountryExists(value);
+                    if (!countryExists) {
+                        throw i18n.__("invalidCountry");
+                    }
+                    return true;
+                }),
 
             body("gender")
                 .optional()
@@ -129,7 +153,14 @@ export class AuthValidation {
                 .notEmpty()
                 .withMessage(() => i18n.__("identifierRequired"))
                 .isString()
-                .withMessage(() => i18n.__("invalidIdentifier")),
+                .withMessage(() => i18n.__("invalidIdentifier"))
+                .custom(async (value, { req }) => {
+                    const type = getTypeWithIdentifier(value);
+                    if (!type) {
+                        throw i18n.__("invalidIdentifier");
+                    }
+                    return true;
+                }),
         ];
     }
 
@@ -141,36 +172,20 @@ export class AuthValidation {
                 .withMessage(() => i18n.__("typeRequired"))
                 .isIn(["user"])
                 .withMessage(() => i18n.__("invalidType")),
-                
-            body("email")
-                .optional()
-                .trim()
-                .notEmpty()
-                .withMessage(() => i18n.__("emailRequired"))
-                .isEmail()
-                .withMessage(() => i18n.__("invalidEmail")),
 
-            body("phone")
-                .optional()
+            body("identifier")
                 .trim()
                 .notEmpty()
-                .withMessage(() => i18n.__("phoneRequired"))
-                .isMobilePhone("any")
-                .withMessage(() => i18n.__("invalidPhone"))
-                .custom((value, { req }) => {
-                    if (!value.startsWith("+")) {
-                        throw i18n.__("invalidPhone");
+                .withMessage(() => i18n.__("identifierRequired"))
+                .isString()
+                .withMessage(() => i18n.__("invalidIdentifier"))
+                .custom(async (value, { req }) => {
+                    const type = getTypeWithIdentifier(value);
+                    if (!type) {
+                        throw i18n.__("invalidIdentifier");
                     }
                     return true;
                 }),
-
-            // make sure ate least email or phone is provided
-            check().custom((value, { req }) => {
-                if (!req.body.email && !req.body.phone) {
-                    throw i18n.__("emailOrPhoneRequired");
-                }
-                return true;
-            }),
 
             body("password")
                 .trim()
@@ -225,7 +240,14 @@ export class AuthValidation {
                 .notEmpty()
                 .withMessage(() => i18n.__("identifierRequired"))
                 .isString()
-                .withMessage(() => i18n.__("invalidIdentifier")),
+                .withMessage(() => i18n.__("invalidIdentifier"))
+                .custom(async (value, { req }) => {
+                    const type = getTypeWithIdentifier(value);
+                    if (!type) {
+                        throw i18n.__("invalidIdentifier");
+                    }
+                    return true;
+                }),
 
             body("otp")
                 .trim()
@@ -250,7 +272,14 @@ export class AuthValidation {
                 .notEmpty()
                 .withMessage(() => i18n.__("identifierRequired"))
                 .isString()
-                .withMessage(() => i18n.__("invalidIdentifier")),
+                .withMessage(() => i18n.__("invalidIdentifier"))
+                .custom(async (value, { req }) => {
+                    const type = getTypeWithIdentifier(value);
+                    if (!type) {
+                        throw i18n.__("invalidIdentifier");
+                    }
+                    return true;
+                }),
 
             body("password")
                 .trim()

@@ -103,7 +103,7 @@ export class AdminController {
         try {
             const data = req.validatedData;
 
-            const response = await this.adminService.deleteAdmin(data);
+            const response = await this.adminService.deleteAdmin(data, req);
 
             if (response.error) {
                 return res.status(400).send(apiError(400, response.error));
@@ -122,7 +122,7 @@ export class AdminController {
         try {
             const data = req.validatedData;
 
-            const response = await this.adminService.toggleBlockAdmin(data);
+            const response = await this.adminService.toggleBlockAdmin(data, req);
 
             if (response.error) {
                 return res.status(400).send(apiError(400, response.error));

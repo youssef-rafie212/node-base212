@@ -60,7 +60,16 @@ export class AuthController {
             const response = await this.authService.localSignIn(data);
 
             if (response.error) {
-                return res.status(401).send(apiError(401, response.error));
+                return res
+                    .status(401)
+                    .send(
+                        apiError(
+                            401,
+                            response.error,
+                            response.key,
+                            response.retryToken
+                        )
+                    );
             }
 
             res.send(

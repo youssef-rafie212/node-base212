@@ -8,7 +8,7 @@
     "forbidden": "Forbidden",
     "emailExists": "Email already exists.",
     "phoneExists": "Phone number already exists.",
-    "invalidCredentials": "Invalid email or password.",
+    "invalidCredentials": "Invalid credentials.",
     "successfulLogin": "Login successful.",
     "invalidEmail": "Invalid email format.",
     "passwordTooShort": "Password must be at least 6 characters long.",
@@ -103,5 +103,7 @@
     "invalidOldPassword": "Invalid old password.",
     "passwordUpdated": "Password updated successfully.",
     "reasonRequired": "Reason is required.",
-    "invalidReason": "Invalid reason."
+    "invalidReason": "Invalid reason.",
+    "cantBlockSelf": "You cannot block your own admin account.",
+    "cantDeleteSelf": "You cannot delete your own admin account."
 }

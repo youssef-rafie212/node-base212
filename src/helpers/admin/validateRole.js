@@ -8,5 +8,5 @@ export const validateRole = async (id, isSuperAdminRole) => {
         isSuperAdminRole,
     });
 
-    return role ? true : false;
+    return role;
 };
